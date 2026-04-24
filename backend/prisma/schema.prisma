@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  password    String
+  phone       String
+  role        Role     @default(CLIENT)
+  avatar      String?
+  rating      Float    @default(5.0)
+  totalTrips  Int      @default(0)
+  fcmToken    String?
+  createdAt   DateTime @default(now())
+
+  motoboy             Motoboy?
+  pedidosCliente      Pedido[]    @relation("ClientePedidos")
+  avaliacoesFeitas    Avaliacao[] @relation("AvaliacoesFeitas")
+  avaliacoesRecebidas Avaliacao[] @relation("AvaliacoesRecebidas")
+  mensagens           Mensagem[]
+}
+
+enum Role {
+  CLIENT
+  MOTOBOY
+  ADMIN
+}
+
+model Motoboy {
+  id         String        @id @default(uuid())
+  userId     String        @unique
+  user       User          @relation(fields: [userId], references: [id])
+  cnh        String
+  cnhUrl     String?
+  vehicle    String
+  plate      String
+  status     MotoboyStatus @default(PENDING)
+  lat        Float?
+  lng        Float?
+  locationAt DateTime?
+
+  assinatura Assinatura?
+  pedidos    Pedido[]    @relation("MotoboyPedidos")
+  propostas  Proposta[]
+}
+
+enum MotoboyStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model Plano {
+  id          String       @id @default(uuid())
+  name        String
+  price       Float
+  description String
+  active      Boolean      @default(true)
+  assinaturas Assinatura[]
+}
+
+model Assinatura {
+  id        String           @id @default(uuid())
+  motoboyId String           @unique
+  motoboy   Motoboy          @relation(fields: [motoboyId], references: [id])
+  planoId   String
+  plano     Plano            @relation(fields: [planoId], references: [id])
+  status    AssinaturaStatus @default(PENDING)
+  startDate DateTime?
+  endDate   DateTime?
+  mpSubId   String?
+  createdAt DateTime         @default(now())
+}
+
+enum AssinaturaStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model Pedido {
+  id               String       @id @default(uuid())
+  clienteId        String
+  cliente          User         @relation("ClientePedidos", fields: [clienteId], references: [id])
+  motoboyId        String?
+  motoboy          Motoboy?     @relation("MotoboyPedidos", fields: [motoboyId], references: [id])
+  origemEndereco   String
+  origemLat        Float
+  origemLng        Float
+  destinoEndereco  String
+  destinoLat       Float
+  destinoLng       Float
+  distanciaKm      Float
+  tempoEstimadoMin Int
+  valorProposto    Float
+  valorFinal       Float?
+  descricao        String?
+  status           PedidoStatus @default(WAITING_OFFERS)
+  expiresAt        DateTime
+  aceitoAt         DateTime?
+  entregueAt       DateTime?
+  createdAt        DateTime     @default(now())
+
+  propostas  Proposta[]
+  mensagens  Mensagem[]
+  avaliacoes Avaliacao[]
+}
+
+enum PedidoStatus {
+  WAITING_OFFERS
+  ACCEPTED
+  IN_PROGRESS
+  DELIVERED
+  CANCELLED
+  EXPIRED
+}
+
+model Proposta {
+  id        String         @id @default(uuid())
+  pedidoId  String
+  pedido    Pedido         @relation(fields: [pedidoId], references: [id])
+  motoboyId String
+  motoboy   Motoboy        @relation(fields: [motoboyId], references: [id])
+  valor     Float
+  status    PropostaStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+}
+
+enum PropostaStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Mensagem {
+  id        String   @id @default(uuid())
+  pedidoId  String
+  pedido    Pedido   @relation(fields: [pedidoId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  texto     String
+  createdAt DateTime @default(now())
+}
+
+model Avaliacao {
+  id          String   @id @default(uuid())
+  pedidoId    String
+  pedido      Pedido   @relation(fields: [pedidoId], references: [id])
+  avaliadorId String
+  avaliador   User     @relation("AvaliacoesFeitas", fields: [avaliadorId], references: [id])
+  avaliadoId  String
+  avaliado    User     @relation("AvaliacoesRecebidas", fields: [avaliadoId], references: [id])
+  nota        Int
+  comentario  String?
+  createdAt   DateTime @default(now())
+}
