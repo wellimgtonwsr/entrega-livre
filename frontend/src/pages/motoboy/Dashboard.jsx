@@ -9,13 +9,9 @@ import StatusAssinatura from '../../components/StatusAssinatura'
 import BottomNav from '../../components/BottomNav'
 
 const s = {
-  wrap: { display: 'flex', flexDirection: 'column', height: '100dvh', background: '#f5f5f5' },
-  header: { background: '#1a1a2e', padding: '14px 20px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  title: { fontSize: 18, fontWeight: 800 },
-  mapWrap: { height: '45dvh', position: 'relative' },
-  list: { flex: 1, overflowY: 'auto', padding: '12px 16px 80px' },
-  listTitle: { fontSize: 14, fontWeight: 700, color: '#888', marginBottom: 10, textTransform: 'uppercase' },
-  empty: { textAlign: 'center', color: '#aaa', marginTop: 30, fontSize: 14 },
+  wrap: { display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--bg)', overflow: 'hidden' },
+  mapWrap: { height: '42dvh', position: 'relative', flexShrink: 0 },
+  list: { flex: 1, overflowY: 'auto', padding: '14px 16px', paddingBottom: 'max(90px, calc(90px + env(safe-area-inset-bottom)))' },
 }
 
 export default function Dashboard() {
@@ -89,15 +85,29 @@ export default function Dashboard() {
 
   return (
     <div style={s.wrap}>
-      <div style={s.header}>
-        <div style={s.title}>🛵 Dashboard</div>
+      {/* Header */}
+      <div className="page-header" style={{ justifyContent: 'space-between' }}>
+        <div>
+          <div className="page-header-title">🛵 Dashboard</div>
+          <div className="page-header-sub">
+            {motoPos ? '🟢 Online — atualizando posição' : 'Obtendo localização...'}
+          </div>
+        </div>
         <StatusAssinatura assinatura={assinatura} compact />
       </div>
 
+      {/* Banner assinatura inativa */}
       {!assinaturaAtiva && (
-        <div style={{ background: '#fee2e2', padding: '10px 16px', fontSize: 13, color: '#dc2626', textAlign: 'center' }}>
-          Assinatura inativa.{' '}
-          <span onClick={() => navigate('/motoboy/assinatura')} style={{ fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>Ativar agora</span>
+        <div style={{
+          background: 'linear-gradient(90deg,#fee2e2,#fecaca)',
+          padding: '10px 16px', fontSize: 13,
+          color: '#dc2626', display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          ⚠️ Assinatura inativa.
+          <span onClick={() => navigate('/motoboy/assinatura')}
+            style={{ fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', marginLeft: 4 }}>
+            Ativar agora
+          </span>
         </div>
       )}
 
@@ -124,9 +134,19 @@ export default function Dashboard() {
       </div>
 
       <div style={s.list}>
-        <div style={s.listTitle}>Pedidos na sua área ({pedidos.length})</div>
-        {loading && <div style={s.empty}>Buscando pedidos...</div>}
-        {!loading && pedidos.length === 0 && <div style={s.empty}>Nenhum pedido próximo agora</div>}
+        <p className="sect-title">Pedidos na sua área ({pedidos.length})</p>
+        {loading && (
+          <div style={{ textAlign: 'center', color: 'var(--text3)', marginTop: 30, fontSize: 14 }}>
+            ⏳ Buscando pedidos...
+          </div>
+        )}
+        {!loading && pedidos.length === 0 && (
+          <div style={{ textAlign: 'center', color: 'var(--text3)', marginTop: 30 }}>
+            <div style={{ fontSize: 40, marginBottom: 10 }}>🛍️</div>
+            <p style={{ fontWeight: 600 }}>Nenhum pedido próximo agora</p>
+            <p style={{ fontSize: 13, marginTop: 4 }}>Aguarde novos pedidos aparecerem</p>
+          </div>
+        )}
         {pedidos.map(p => (
           <CardPedido
             key={p.id}

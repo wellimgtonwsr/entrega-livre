@@ -13,6 +13,11 @@ import Acompanhar from '../pages/cliente/Acompanhar'
 import AvaliarCliente from '../pages/cliente/Avaliar'
 import HistoricoCliente from '../pages/cliente/Historico'
 
+// Passageiro (mototaxi)
+import NovaViagem from '../pages/passageiro/NovaViagem'
+import AguardandoMototaxi from '../pages/passageiro/AguardandoMototaxi'
+import AcompanharViagem from '../pages/passageiro/AcompanharViagem'
+
 // Motoboy
 import Dashboard from '../pages/motoboy/Dashboard'
 import PedidoDetalhe from '../pages/motoboy/PedidoDetalhe'
@@ -39,7 +44,7 @@ export default function AppRouter() {
 
   const homeRedirect = () => {
     if (!user) return <Navigate to="/splash" replace />
-    if (user.role === 'CLIENT') return <Navigate to="/cliente/novo-pedido" replace />
+    if (user.role === 'CLIENT') return <Navigate to="/splash" replace />
     if (user.role === 'MOTOBOY') return <Navigate to="/motoboy/dashboard" replace />
     if (user.role === 'ADMIN') return <Navigate to="/admin" replace />
     return <Navigate to="/splash" replace />
@@ -59,6 +64,11 @@ export default function AppRouter() {
         <Route path="/cliente/acompanhar/:pedidoId" element={<PrivateRoute roles={['CLIENT']}><Acompanhar /></PrivateRoute>} />
         <Route path="/cliente/avaliar/:pedidoId" element={<PrivateRoute roles={['CLIENT']}><AvaliarCliente /></PrivateRoute>} />
         <Route path="/cliente/historico" element={<PrivateRoute roles={['CLIENT']}><HistoricoCliente /></PrivateRoute>} />
+
+        {/* Passageiro (mototaxi) */}
+        <Route path="/passageiro/nova-viagem" element={<PrivateRoute roles={['CLIENT']}><NovaViagem /></PrivateRoute>} />
+        <Route path="/passageiro/aguardando/:corridaId" element={<PrivateRoute roles={['CLIENT']}><AguardandoMototaxi /></PrivateRoute>} />
+        <Route path="/passageiro/acompanhar/:corridaId" element={<PrivateRoute roles={['CLIENT']}><AcompanharViagem /></PrivateRoute>} />
 
         {/* Motoboy */}
         <Route path="/motoboy/dashboard" element={<PrivateRoute roles={['MOTOBOY']}><Dashboard /></PrivateRoute>} />

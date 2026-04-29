@@ -2,24 +2,13 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
-const s = {
-  container: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', background: '#f5f5f5', padding: 24 },
-  card: { background: '#fff', borderRadius: 20, padding: 32, width: '100%', maxWidth: 400, boxShadow: '0 4px 24px rgba(0,0,0,0.08)' },
-  title: { fontSize: 26, fontWeight: 800, color: '#1a1a2e', marginBottom: 8 },
-  sub: { color: '#666', marginBottom: 28, fontSize: 14 },
-  label: { display: 'block', fontSize: 13, fontWeight: 600, color: '#444', marginBottom: 6 },
-  input: { width: '100%', padding: '14px 16px', borderRadius: 12, border: '2px solid #e5e5e5', fontSize: 16, outline: 'none', marginBottom: 16, transition: 'border 0.2s' },
-  btn: { width: '100%', padding: '16px', borderRadius: 14, background: '#f59e0b', border: 'none', color: '#1a1a2e', fontSize: 17, fontWeight: 700, cursor: 'pointer', marginTop: 8 },
-  err: { background: '#fee2e2', color: '#dc2626', padding: '10px 14px', borderRadius: 10, fontSize: 14, marginBottom: 14 },
-  link: { textAlign: 'center', marginTop: 20, color: '#666', fontSize: 14 },
-}
-
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPass, setShowPass] = useState(false)
 
   const handle = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
 
@@ -29,39 +18,78 @@ export default function Login() {
     setLoading(true)
     try {
       const user = await login(form.email, form.password)
-      if (user.role === 'CLIENT') navigate('/cliente/novo-pedido', { replace: true })
+      if (user.role === 'CLIENT') navigate('/splash', { replace: true })
       else if (user.role === 'MOTOBOY') navigate('/motoboy/dashboard', { replace: true })
       else navigate('/admin', { replace: true })
     } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao entrar')
+      setError(err.response?.data?.message || 'E-mail ou senha incorretos')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div style={s.container}>
-      <div style={s.card}>
-        <div style={{ fontSize: 36, marginBottom: 4 }}>🛵</div>
-        <h1 style={s.title}>Entrar</h1>
-        <p style={s.sub}>Bem-vindo de volta!</p>
+    <div style={{
+      minHeight: '100dvh', display: 'flex', flexDirection: 'column',
+      background: '#fff',
+    }}>
+      {/* Top brand */}
+      <div style={{ padding: '32px 16px 0', display: 'flex', justifyContent: 'center' }}>
+        <img
+          src="/entrega-livre/logo.png"
+          alt="Entrega Livre"
+          style={{ width: '80%', maxWidth: 280, objectFit: 'contain' }}
+        />
+      </div>
 
-        {error && <div style={s.err}>{error}</div>}
+      {/* Form — sem card flutuante, tudo integrado ao fundo branco */}
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        padding: '24px 24px',
+        paddingBottom: 'max(32px, calc(32px + env(safe-area-inset-bottom)))',
+        animation: 'fadeUp 0.4s ease both',
+      }}>
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: '#1a253e', marginBottom: 4 }}>Bem-vindo de volta 👋</h1>
+        <p style={{ color: '#555', fontSize: 14, marginBottom: 24, fontWeight: 600 }}>Entre na sua conta para continuar</p>
+
+        {error && (
+          <div className="alert alert-error" style={{ marginBottom: 16 }}>
+            ⚠️ {error}
+          </div>
+        )}
 
         <form onSubmit={submit}>
-          <label style={s.label}>E-mail</label>
-          <input style={s.input} type="email" name="email" value={form.email} onChange={handle} placeholder="seu@email.com" required />
+          <div className="form-group">
+            <label className="lbl">E-mail</label>
+            <input className="inp" type="email" name="email" value={form.email}
+              onChange={handle} placeholder="seu@email.com" required />
+          </div>
 
-          <label style={s.label}>Senha</label>
-          <input style={s.input} type="password" name="password" value={form.password} onChange={handle} placeholder="••••••" required />
+          <div className="form-group" style={{ position: 'relative' }}>
+            <label className="lbl">Senha</label>
+            <input className="inp" type={showPass ? 'text' : 'password'}
+              name="password" value={form.password}
+              onChange={handle} placeholder="Mínimo 6 caracteres" required
+              style={{ paddingRight: 48 }}
+            />
+            <button type="button" onClick={() => setShowPass(p => !p)} style={{
+              position: 'absolute', right: 14, top: 36,
+              background: 'none', border: 'none',
+              color: 'var(--text3)', fontSize: 18, padding: 4,
+            }}>
+              {showPass ? '🙈' : '👁️'}
+            </button>
+          </div>
 
-          <button style={s.btn} disabled={loading}>{loading ? 'Entrando...' : 'Entrar'}</button>
+          <button className="btn btn-primary" type="submit" disabled={loading} style={{ marginTop: 8, fontSize: 17 }}>
+            {loading ? <span className="spinner" /> : 'Entrar'}
+          </button>
         </form>
 
-        <div style={s.link}>
+        <p style={{ textAlign: 'center', marginTop: 20, color: '#555', fontSize: 14, fontWeight: 600 }}>
           Não tem conta?{' '}
-          <Link to="/splash" style={{ color: '#f59e0b', fontWeight: 700, textDecoration: 'none' }}>Cadastrar</Link>
-        </div>
+          <Link to="/splash" style={{ color: 'var(--brand)', fontWeight: 700 }}>Cadastre-se grátis</Link>
+        </p>
       </div>
     </div>
   )

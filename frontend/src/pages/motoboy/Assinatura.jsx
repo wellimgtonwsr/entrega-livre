@@ -4,19 +4,7 @@ import api from '../../services/api'
 import StatusAssinatura from '../../components/StatusAssinatura'
 import BottomNav from '../../components/BottomNav'
 
-const s = {
-  wrap: { display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: '#f5f5f5' },
-  header: { background: '#1a1a2e', padding: '20px', color: '#fff' },
-  title: { fontSize: 20, fontWeight: 800 },
-  body: { flex: 1, padding: '16px 16px 80px' },
-  card: { background: '#fff', borderRadius: 16, padding: 20, marginBottom: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '2px solid transparent' },
-  cardSelected: { border: '2px solid #f59e0b' },
-  planoNome: { fontSize: 18, fontWeight: 800, color: '#1a1a2e', marginBottom: 4 },
-  planoPreco: { fontSize: 28, fontWeight: 800, color: '#10b981', marginBottom: 4 },
-  planoDesc: { color: '#666', fontSize: 14 },
-  btn: { width: '100%', padding: 16, borderRadius: 14, background: '#f59e0b', border: 'none', color: '#1a1a2e', fontSize: 17, fontWeight: 700, cursor: 'pointer', marginTop: 16 },
-  free: { fontSize: 13, color: '#888', textAlign: 'center', marginTop: 12 },
-}
+
 
 export default function Assinatura() {
   const navigate = useNavigate()
@@ -67,51 +55,57 @@ export default function Assinatura() {
   }
 
   return (
-    <div style={s.wrap}>
-      <div style={s.header}>
-        <div style={s.title}>Assinatura 💳</div>
-        <div style={{ fontSize: 13, opacity: 0.7, marginTop: 4 }}>Pague mensalidade fixa, fique com 100% de cada entrega</div>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: 'var(--bg)' }}>
+      <div className="page-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+        <div className="page-header-title">Assinatura 💳</div>
+        <div className="page-header-sub">Pague mensalidade fixa, fique com 100% de cada entrega</div>
       </div>
 
-      <div style={s.body}>
+      <div style={{ flex: 1, padding: '16px', paddingBottom: 'max(90px, calc(90px + env(safe-area-inset-bottom)))' }}>
         <StatusAssinatura assinatura={assinatura} />
 
         {assinatura?.status !== 'ACTIVE' && (
           <>
-            <div style={{ fontWeight: 700, fontSize: 16, color: '#1a1a2e', marginBottom: 14 }}>Escolha seu plano:</div>
+            <p className="sect-title">Escolha seu plano</p>
             {planos.map(p => (
               <div
                 key={p.id}
-                style={{ ...s.card, ...(selected === p.id ? s.cardSelected : {}) }}
+                className="card"
+                style={{
+                  marginBottom: 12, cursor: 'pointer',
+                  border: selected === p.id ? '2px solid var(--brand)' : '2px solid transparent',
+                  transition: 'border-color 0.15s',
+                }}
                 onClick={() => setSelected(p.id)}
               >
-                <div style={s.planoNome}>{p.name}</div>
-                <div style={s.planoPreco}>R$ {p.price.toFixed(2)}<span style={{ fontSize: 14, color: '#888' }}>/mês</span></div>
-                <div style={s.planoDesc}>{p.description}</div>
-                {selected === p.id && <div style={{ color: '#f59e0b', fontWeight: 700, fontSize: 13, marginTop: 6 }}>✓ Selecionado</div>}
+                <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--text)', marginBottom: 4 }}>{p.name}</div>
+                <div style={{ fontWeight: 800, fontSize: 28, color: 'var(--success)', marginBottom: 4 }}>
+                  R$ {p.price.toFixed(2)}<span style={{ fontSize: 14, color: 'var(--text3)', fontWeight: 400 }}>/mês</span>
+                </div>
+                <div style={{ color: 'var(--text2)', fontSize: 14 }}>{p.description}</div>
+                {selected === p.id && <div style={{ color: 'var(--brand)', fontWeight: 700, fontSize: 13, marginTop: 6 }}>✓ Selecionado</div>}
               </div>
             ))}
 
-            <button style={s.btn} onClick={assinar} disabled={loading || !selected}>
+            <button className="btn btn-primary" style={{ width: '100%', marginTop: 8 }} onClick={assinar} disabled={loading || !selected}>
               {loading ? 'Redirecionando...' : '💳 Assinar agora via Mercado Pago'}
             </button>
-            <div style={s.free}>Clientes usam o app GRÁTIS. Só o motoboy paga mensalidade.</div>
+            <p style={{ fontSize: 13, color: 'var(--text3)', textAlign: 'center', marginTop: 12 }}>
+              Clientes usam o app GRÁTIS. Só o motoboy paga mensalidade.
+            </p>
           </>
         )}
 
         {assinatura?.status === 'ACTIVE' && (
           <>
-            <div style={{ background: '#dcfce7', borderRadius: 14, padding: 16, marginBottom: 14 }}>
-              <div style={{ fontWeight: 700, color: '#166534', fontSize: 15 }}>✅ Assinatura ativa</div>
-              <div style={{ color: '#166534', fontSize: 13, marginTop: 4 }}>
+            <div className="alert alert-success" style={{ marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>✅ Assinatura ativa</div>
+              <div style={{ fontSize: 13, marginTop: 4 }}>
                 Plano: {assinatura.plano?.name} — R$ {assinatura.plano?.price?.toFixed(2)}/mês<br />
                 Válida até: {assinatura.endDate ? new Date(assinatura.endDate).toLocaleDateString('pt-BR') : '—'}
               </div>
             </div>
-            <button
-              onClick={cancelar}
-              style={{ width: '100%', padding: 14, borderRadius: 14, background: '#fee2e2', border: 'none', color: '#dc2626', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}
-            >
+            <button className="btn btn-danger" style={{ width: '100%' }} onClick={cancelar}>
               Cancelar assinatura
             </button>
           </>

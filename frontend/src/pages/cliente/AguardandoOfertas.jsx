@@ -4,17 +4,7 @@ import api from '../../services/api'
 import { useSocket } from '../../context/SocketContext'
 import CardProposta from '../../components/CardProposta'
 
-const s = {
-  wrap: { display: 'flex', flexDirection: 'column', height: '100dvh', background: '#f5f5f5' },
-  header: { background: '#1a1a2e', padding: '20px', color: '#fff' },
-  title: { fontSize: 20, fontWeight: 800 },
-  timerRow: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 },
-  timerBadge: { background: 'rgba(245,158,11,0.2)', color: '#f59e0b', padding: '4px 12px', borderRadius: 20, fontSize: 14, fontWeight: 700 },
-  body: { flex: 1, overflowY: 'auto', padding: '16px 16px 80px' },
-  empty: { textAlign: 'center', color: '#888', marginTop: 40, fontSize: 15 },
-  anim: { fontSize: 40, display: 'block', marginBottom: 12 },
-  cancelBtn: { width: '100%', padding: 14, borderRadius: 14, background: '#fee2e2', border: 'none', color: '#dc2626', fontSize: 16, fontWeight: 700, cursor: 'pointer', marginTop: 16 },
-}
+
 
 export default function AguardandoOfertas() {
   const { pedidoId } = useParams()
@@ -105,29 +95,27 @@ export default function AguardandoOfertas() {
   const pendentes = propostas.filter(p => p.status === 'PENDING')
 
   return (
-    <div style={s.wrap}>
-      <div style={s.header}>
-        <div style={s.title}>Aguardando motoboys 🛵</div>
-        <div style={s.timerRow}>
-          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>Expira em:</span>
-          <span style={s.timerBadge}>⏱ {timer || '--:--'}</span>
-          <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>Proposta: R$ {pedido?.valorProposto?.toFixed(2)}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--bg)' }}>
+      {/* Header */}
+      <div className="page-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 10 }}>
+        <div className="page-header-title">Aguardando motoboys 🛵</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>Expira em:</span>
+          <span className="badge" style={{ background: 'rgba(245,158,11,0.2)', color: 'var(--brand)', fontWeight: 700 }}>⏱ {timer || '--:--'}</span>
+          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>Proposta: R$ {pedido?.valorProposto?.toFixed(2)}</span>
         </div>
       </div>
 
-      <div style={s.body}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px', paddingBottom: 'max(24px, env(safe-area-inset-bottom))' }}>
         {pendentes.length === 0 ? (
-          <div style={s.empty}>
-            <span style={s.anim}>🔍</span>
-            Procurando motoboys próximos...
-            <br /><br />
-            <span style={{ fontSize: 13 }}>Se ninguém responder, tente aumentar o valor proposto.</span>
+          <div style={{ textAlign: 'center', color: 'var(--text3)', marginTop: 48 }}>
+            <div style={{ fontSize: 52, marginBottom: 12 }} className="anim-in">🔍</div>
+            <p style={{ fontWeight: 600, color: 'var(--text)', fontSize: 15 }}>Procurando motoboys próximos...</p>
+            <p style={{ fontSize: 13, marginTop: 4 }}>Se ninguém responder, tente aumentar o valor proposto.</p>
           </div>
         ) : (
           <>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#444', marginBottom: 12 }}>
-              {pendentes.length} proposta{pendentes.length > 1 ? 's' : ''} recebida{pendentes.length > 1 ? 's' : ''}
-            </div>
+            <p className="sect-title">{pendentes.length} proposta{pendentes.length > 1 ? 's' : ''} recebida{pendentes.length > 1 ? 's' : ''}</p>
             {pendentes.map(prop => (
               <CardProposta key={prop.id} proposta={prop} onAceitar={() => aceitar(prop.id)} disabled={loading} />
             ))}
@@ -135,14 +123,14 @@ export default function AguardandoOfertas() {
         )}
 
         {isPendente && (
-          <button style={s.cancelBtn} onClick={cancelar}>Cancelar pedido</button>
+          <button className="btn btn-danger" style={{ width: '100%', marginTop: 20 }} onClick={cancelar}>Cancelar pedido</button>
         )}
 
         {pedido?.status === 'EXPIRED' && (
-          <div style={{ textAlign: 'center', marginTop: 20 }}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>⏰</div>
-            <div style={{ fontWeight: 700, color: '#dc2626' }}>Pedido expirado</div>
-            <button style={{ ...s.cancelBtn, background: '#f59e0b', color: '#1a1a2e', marginTop: 12 }} onClick={() => navigate('/cliente/novo-pedido')}>
+          <div style={{ textAlign: 'center', marginTop: 32 }}>
+            <div style={{ fontSize: 48, marginBottom: 8 }}>⏰</div>
+            <p style={{ fontWeight: 700, color: 'var(--error)', fontSize: 15 }}>Pedido expirado</p>
+            <button className="btn btn-primary" style={{ width: '100%', marginTop: 16 }} onClick={() => navigate('/cliente/novo-pedido')}>
               Fazer novo pedido
             </button>
           </div>

@@ -102,6 +102,7 @@ model Pedido {
   distanciaKm      Float
   tempoEstimadoMin Int
   valorProposto    Float
+  valorCalculado   Float?
   valorFinal       Float?
   descricao        String?
   status           PedidoStatus @default(WAITING_OFFERS)

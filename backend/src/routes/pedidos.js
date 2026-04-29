@@ -117,6 +117,14 @@ router.get('/usuarios/:id/avaliacoes', auth, async (req, res, next) => {
 });
 
 // Pedidos
+// Calcular valor antes de criar pedido (NÃO requer auth — loja/cliente pode consultar)
+router.post('/pedidos/calcular', auth, [
+  body('origemLat').isNumeric(),
+  body('origemLng').isNumeric(),
+  body('destinoLat').isNumeric(),
+  body('destinoLng').isNumeric(),
+], ctrl.calcularValorEntrega);
+
 router.post('/pedidos', auth, roles('CLIENT'), [
   body('origemEndereco').notEmpty(),
   body('origemLat').isNumeric(),
@@ -124,9 +132,6 @@ router.post('/pedidos', auth, roles('CLIENT'), [
   body('destinoEndereco').notEmpty(),
   body('destinoLat').isNumeric(),
   body('destinoLng').isNumeric(),
-  body('distanciaKm').isNumeric(),
-  body('tempoEstimadoMin').isInt(),
-  body('valorProposto').isFloat({ min: 1 }),
 ], ctrl.criarPedido);
 
 router.get('/pedidos/historico', auth, ctrl.historico);

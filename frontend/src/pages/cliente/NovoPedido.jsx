@@ -8,26 +8,6 @@ const LIBRARIES = ['places']
 const PRECO_POR_KM = 2.5
 const PRECO_MINIMO = 8
 
-const s = {
-  wrap: { display: 'flex', flexDirection: 'column', height: '100dvh', background: '#f5f5f5' },
-  header: { background: '#1a1a2e', padding: '16px 20px 12px', color: '#fff' },
-  title: { fontSize: 20, fontWeight: 800 },
-  sub: { fontSize: 13, opacity: 0.7, marginTop: 2 },
-  mapBox: { flex: 1, position: 'relative' },
-  form: { background: '#fff', padding: '16px 20px', borderRadius: '24px 24px 0 0', boxShadow: '0 -4px 20px rgba(0,0,0,0.08)', maxHeight: '52dvh', overflowY: 'auto' },
-  label: { fontSize: 12, fontWeight: 700, color: '#888', textTransform: 'uppercase', marginBottom: 4, display: 'block' },
-  input: { width: '100%', padding: '12px 14px', borderRadius: 12, border: '2px solid #e5e5e5', fontSize: 15, marginBottom: 12, outline: 'none' },
-  infoRow: { display: 'flex', gap: 10, marginBottom: 14 },
-  infoBadge: { flex: 1, background: '#f8fafc', borderRadius: 10, padding: '10px', textAlign: 'center' },
-  infoBadgeVal: { fontSize: 16, fontWeight: 700, color: '#1a1a2e' },
-  infoBadgeLbl: { fontSize: 11, color: '#888', marginTop: 2 },
-  valorWrap: { marginBottom: 14 },
-  valorInput: { width: '100%', padding: '14px', borderRadius: 12, border: '2px solid #f59e0b', fontSize: 22, fontWeight: 700, color: '#1a1a2e', outline: 'none', textAlign: 'center' },
-  sugestao: { textAlign: 'center', fontSize: 13, color: '#666', marginTop: 6 },
-  btn: { width: '100%', padding: 16, borderRadius: 14, background: '#f59e0b', border: 'none', color: '#1a1a2e', fontSize: 17, fontWeight: 700, cursor: 'pointer' },
-  btnDisabled: { opacity: 0.5, cursor: 'not-allowed' },
-}
-
 export default function NovoPedido() {
   const navigate = useNavigate()
   const { isLoaded } = useJsApiLoader({
@@ -120,16 +100,25 @@ export default function NovoPedido() {
     }
   }
 
-  if (!isLoaded) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh' }}>Carregando mapa...</div>
+  if (!isLoaded) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100dvh', gap: 12 }}>
+      <span style={{ fontSize: 40 }}>🗺️</span>
+      <p style={{ color: 'var(--text2)', fontWeight: 600 }}>Carregando mapa...</p>
+    </div>
+  )
 
   return (
-    <div style={s.wrap}>
-      <div style={s.header}>
-        <div style={s.title}>Nova entrega 📦</div>
-        <div style={s.sub}>Proponha o valor, o motoboy decide</div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--bg)' }}>
+      {/* Header */}
+      <div className="page-header">
+        <div>
+          <div className="page-header-title">📦 Nova entrega</div>
+          <div className="page-header-sub">Proponha o valor, o motoboy decide</div>
+        </div>
       </div>
 
-      <div style={s.mapBox}>
+      {/* Mapa */}
+      <div style={{ flex: 1, position: 'relative' }}>
         <GoogleMap
           mapContainerStyle={{ width: '100%', height: '100%' }}
           zoom={13}
@@ -143,58 +132,82 @@ export default function NovoPedido() {
         </GoogleMap>
       </div>
 
-      <div style={s.form}>
-        {error && <div style={{ background: '#fee2e2', color: '#dc2626', padding: '10px', borderRadius: 10, marginBottom: 12, fontSize: 14 }}>{error}</div>}
+      {/* Painel inferior */}
+      <div style={{
+        background: '#fff', padding: '20px 20px',
+        borderRadius: '24px 24px 0 0',
+        boxShadow: '0 -6px 24px rgba(0,0,0,0.10)',
+        maxHeight: '54dvh', overflowY: 'auto',
+        paddingBottom: 'max(90px, calc(90px + env(safe-area-inset-bottom)))',
+      }}>
+        {error && <div className="alert alert-error" style={{ marginBottom: 12 }}>⚠️ {error}</div>}
 
-        <label style={s.label}>Origem</label>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <Autocomplete onLoad={ac => acOrigem.current = ac} onPlaceChanged={onOrigemPlace}>
-            <input ref={origemRef} style={{ ...s.input, marginBottom: 0, flex: 1 }} placeholder="De onde sai?" />
-          </Autocomplete>
-          <button onClick={usarGPS} style={{ padding: '12px', borderRadius: 12, background: '#1a1a2e', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18 }}>📍</button>
+        <div className="form-group">
+          <label className="lbl">Origem</label>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Autocomplete onLoad={ac => acOrigem.current = ac} onPlaceChanged={onOrigemPlace} style={{ flex: 1 }}>
+              <input ref={origemRef} className="inp" placeholder="De onde sai?" style={{ marginBottom: 0 }} />
+            </Autocomplete>
+            <button onClick={usarGPS} style={{
+              padding: '0 16px', borderRadius: 'var(--radius-sm)',
+              background: 'var(--dark)', border: 'none',
+              color: '#fff', fontSize: 20, flexShrink: 0,
+            }}>📍</button>
+          </div>
         </div>
 
-        <label style={s.label}>Destino</label>
-        <Autocomplete onLoad={ac => acDestino.current = ac} onPlaceChanged={onDestinoPlace}>
-          <input style={s.input} placeholder="Para onde vai?" />
-        </Autocomplete>
+        <div className="form-group">
+          <label className="lbl">Destino</label>
+          <Autocomplete onLoad={ac => acDestino.current = ac} onPlaceChanged={onDestinoPlace}>
+            <input className="inp" placeholder="Para onde vai?" />
+          </Autocomplete>
+        </div>
 
         {rota && (
-          <div style={s.infoRow}>
-            <div style={s.infoBadge}>
-              <div style={s.infoBadgeVal}>{rota.distanciaKm.toFixed(1)} km</div>
-              <div style={s.infoBadgeLbl}>Distância</div>
+          <div className="info-row">
+            <div className="info-badge">
+              <div className="info-badge-val">{rota.distanciaKm.toFixed(1)} km</div>
+              <div className="info-badge-lbl">Distância</div>
             </div>
-            <div style={s.infoBadge}>
-              <div style={s.infoBadgeVal}>{rota.tempoEstimadoMin} min</div>
-              <div style={s.infoBadgeLbl}>Tempo est.</div>
+            <div className="info-badge">
+              <div className="info-badge-val">{rota.tempoEstimadoMin} min</div>
+              <div className="info-badge-lbl">Tempo est.</div>
             </div>
           </div>
         )}
 
-        <div style={s.valorWrap}>
-          <label style={s.label}>Quanto você quer pagar?</label>
+        <div className="form-group">
+          <label className="lbl">Quanto você quer pagar?</label>
           <input
-            style={s.valorInput}
-            type="number"
-            min="1"
-            step="0.50"
-            value={valor}
-            onChange={e => setValor(e.target.value)}
+            className="inp"
+            type="number" min="1" step="0.50"
+            value={valor} onChange={e => setValor(e.target.value)}
             placeholder="R$ 0,00"
+            style={{
+              fontSize: 24, fontWeight: 800, textAlign: 'center',
+              border: '2px solid var(--brand)',
+              boxShadow: '0 0 0 3px rgba(245,158,11,0.12)',
+            }}
           />
-          {rota && <div style={s.sugestao}>Sugestão: R$ {Math.max(PRECO_MINIMO, rota.distanciaKm * PRECO_POR_KM).toFixed(2)}</div>}
+          {rota && (
+            <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text2)', marginTop: 6 }}>
+              💡 Sugestão: <strong>R$ {Math.max(PRECO_MINIMO, rota.distanciaKm * PRECO_POR_KM).toFixed(2)}</strong>
+            </p>
+          )}
         </div>
 
-        <label style={s.label}>O que será entregue? (opcional)</label>
-        <input style={s.input} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Ex: caixa pequena, documentos..." />
+        <div className="form-group">
+          <label className="lbl">Descrição (opcional)</label>
+          <input className="inp" value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Ex: caixa pequena, documentos..." />
+        </div>
 
         <button
-          style={{ ...s.btn, ...((!origem || !destino || !valor || loading) ? s.btnDisabled : {}) }}
+          className="btn btn-primary"
           onClick={solicitar}
           disabled={!origem || !destino || !valor || loading}
+          style={{ fontSize: 17 }}
         >
-          {loading ? 'Solicitando...' : '🛵 Solicitar entrega'}
+          {loading ? <span className="spinner" style={{ borderTopColor: 'var(--dark)' }} /> : '🛵 Solicitar entrega'}
         </button>
       </div>
       <BottomNav role="CLIENT" />

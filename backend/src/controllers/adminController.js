@@ -41,13 +41,23 @@ exports.listarMotoboys = async (req, res, next) => {
 // PUT /api/admin/motoboy/:id/aprovar
 exports.aprovarMotoboy = async (req, res, next) => {
   try {
-    const motoboy = await prisma.motoboy.findUnique({ where: { id: req.params.id } });
+    const motoboy = await prisma.motoboy.findUnique({
+      where: { id: req.params.id },
+      include: { user: { select: { id: true, name: true } } },
+    });
     if (!motoboy) return res.status(404).json({ success: false, message: 'Motoboy não encontrado' });
 
     await prisma.motoboy.update({
       where: { id: req.params.id },
       data: { status: 'ACTIVE' },
     });
+
+    // Notificar o motoboy em tempo real via socket
+    if (req.io) {
+      req.io.to(`user:${motoboy.userId}`).emit('motoboy:aprovado', {
+        message: 'Parabéns! Seu cadastro foi aprovado. Agora você pode receber entregas.',
+      });
+    }
 
     return res.json({ success: true, message: 'Motoboy aprovado' });
   } catch (err) {

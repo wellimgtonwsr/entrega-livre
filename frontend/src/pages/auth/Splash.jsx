@@ -1,39 +1,83 @@
+﻿import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-
-const s = {
-  container: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100dvh', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', padding: 24 },
-  logo: { fontSize: 48, marginBottom: 8 },
-  name: { color: '#fff', fontSize: 32, fontWeight: 800, marginBottom: 6, letterSpacing: -1 },
-  tagline: { color: 'rgba(255,255,255,0.7)', fontSize: 16, marginBottom: 60, textAlign: 'center' },
-  btn: { width: '100%', maxWidth: 360, padding: '18px 24px', borderRadius: 16, border: 'none', fontSize: 18, fontWeight: 700, cursor: 'pointer', marginBottom: 14, transition: 'transform 0.1s, opacity 0.1s' },
-  btnPrimary: { background: '#f59e0b', color: '#1a1a2e' },
-  btnSecondary: { background: 'rgba(255,255,255,0.1)', color: '#fff', border: '2px solid rgba(255,255,255,0.2)' },
-  link: { color: 'rgba(255,255,255,0.5)', fontSize: 14, marginTop: 20, cursor: 'pointer', textDecoration: 'underline' },
-}
 
 export default function Splash() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  if (user) {
-    if (user.role === 'CLIENT') navigate('/cliente/novo-pedido', { replace: true })
-    else if (user.role === 'MOTOBOY') navigate('/motoboy/dashboard', { replace: true })
-  }
+  useEffect(() => {
+    if (!user) return
+    if (user.role === 'MOTOBOY') navigate('/motoboy/dashboard', { replace: true })
+    else if (user.role === 'LOJA') navigate('/loja/dashboard', { replace: true })
+    else if (user.role === 'ADMIN') navigate('/admin', { replace: true })
+  }, [navigate, user])
+
+  const ir = (path) => user ? navigate(path) : navigate(`/cadastro?role=CLIENT&next=${encodeURIComponent(path)}`)
 
   return (
-    <div style={s.container}>
-      <div style={s.logo}>🛵</div>
-      <h1 style={s.name}>Entrega Livre</h1>
-      <p style={s.tagline}>Sem taxa por corrida. O motoboy fica com 100% do combinado.</p>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: '#fff' }}>
 
-      <button style={{ ...s.btn, ...s.btnPrimary }} onClick={() => navigate('/cadastro?role=CLIENT')}>
-        📦 Quero enviar um pacote
-      </button>
-      <button style={{ ...s.btn, ...s.btnSecondary }} onClick={() => navigate('/cadastro?role=MOTOBOY')}>
-        🛵 Quero fazer entregas
-      </button>
-      <span style={s.link} onClick={() => navigate('/login')}>Já tenho conta</span>
+      <div style={{ padding: '32px 20px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img src="/entrega-livre/logo.png" alt="Entrega Livre" style={{ width: '100%', maxWidth: 340, objectFit: 'contain' }} />
+        <p style={{ color: '#555', fontSize: 13, marginTop: 6, textAlign: 'center', fontWeight: 700 }}>Sem taxa. Lucro pra voce.</p>
+      </div>
+
+      <div style={{ margin: '0 20px 14px', height: 1, background: '#f0f0f0' }} />
+
+      <div style={{ flex: 1, padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+        <button onClick={() => ir('/restaurantes')} style={{ background: '#fff8ec', border: '1.5px solid #fde68a', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', textAlign: 'left' }}>
+          <div style={{ width: 46, height: 46, borderRadius: 13, background: 'linear-gradient(135deg,#f59e0b,#d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍔</div>
+          <div>
+            <div style={{ color: '#1a253e', fontWeight: 900, fontSize: 15, marginBottom: 1 }}>Pedir comida</div>
+            <div style={{ color: '#555', fontSize: 12, fontWeight: 600 }}>Restaurantes e lanchonetes perto de voce</div>
+          </div>
+          <div style={{ marginLeft: 'auto', color: '#f59e0b', fontSize: 22, fontWeight: 700 }}>›</div>
+        </button>
+
+        <button onClick={() => ir('/passageiro/nova-viagem')} style={{ background: '#eef0ff', border: '1.5px solid #c7d2fe', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', textAlign: 'left' }}>
+          <div style={{ width: 46, height: 46, borderRadius: 13, background: 'linear-gradient(135deg,#6366f1,#4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏍️</div>
+          <div>
+            <div style={{ color: '#1a253e', fontWeight: 900, fontSize: 15, marginBottom: 1 }}>Passageiro Livre</div>
+            <div style={{ color: '#555', fontSize: 12, fontWeight: 600 }}>Mototaxi — pague o preco justo</div>
+          </div>
+          <div style={{ marginLeft: 'auto', color: '#6366f1', fontSize: 22, fontWeight: 700 }}>›</div>
+        </button>
+
+        <button onClick={() => ir('/cliente/novo-pedido')} style={{ background: '#f3f4f6', border: '1.5px solid #e5e7eb', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', textAlign: 'left' }}>
+          <div style={{ width: 46, height: 46, borderRadius: 13, background: 'linear-gradient(135deg,#374151,#1f2937)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>📦</div>
+          <div>
+            <div style={{ color: '#1a253e', fontWeight: 900, fontSize: 15, marginBottom: 1 }}>Enviar pacote</div>
+            <div style={{ color: '#555', fontSize: 12, fontWeight: 600 }}>Motoboy fica com 100% do combinado</div>
+          </div>
+          <div style={{ marginLeft: 'auto', color: '#9ca3af', fontSize: 22, fontWeight: 700 }}>›</div>
+        </button>
+
+        <button onClick={() => user?.role === 'LOJA' ? navigate('/loja/dashboard') : navigate('/cadastro?role=LOJA')} style={{ background: '#ecfdf5', border: '1.5px solid #a7f3d0', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', textAlign: 'left' }}>
+          <div style={{ width: 46, height: 46, borderRadius: 13, background: 'linear-gradient(135deg,#10b981,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏪</div>
+          <div>
+            <div style={{ color: '#1a253e', fontWeight: 900, fontSize: 15, marginBottom: 1 }}>Criar minha loja</div>
+            <div style={{ color: '#555', fontSize: 12, fontWeight: 600 }}>Restaurante, lanchonete ou lojista</div>
+          </div>
+          <div style={{ marginLeft: 'auto', color: '#10b981', fontSize: 22, fontWeight: 700 }}>›</div>
+        </button>
+
+      </div>
+
+      <div style={{ padding: '16px 16px 32px', paddingBottom: 'max(32px, calc(16px + env(safe-area-inset-bottom)))', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ height: 1, background: '#f0f0f0', marginBottom: 4 }} />
+        <button style={{ background: '#eef0ff', border: '1.5px solid #c7d2fe', borderRadius: 12, padding: '12px', fontSize: 14, fontWeight: 700, color: '#4f46e5', cursor: 'pointer' }} onClick={() => navigate('/cadastro?role=MOTOTAXI')}>
+          🏍️ Quero ser mototaxi
+        </button>
+        <button style={{ background: '#f3f4f6', border: '1.5px solid #e5e7eb', borderRadius: 12, padding: '12px', fontSize: 14, fontWeight: 700, color: '#374151', cursor: 'pointer' }} onClick={() => navigate('/cadastro?role=MOTOBOY')}>
+          🛵 Quero fazer entregas
+        </button>
+        <button onClick={() => navigate('/login')} style={{ background: 'transparent', border: 'none', color: '#aaa', fontSize: 13, fontWeight: 600, padding: '6px', cursor: 'pointer' }}>
+          Ja tenho conta — Entrar
+        </button>
+      </div>
+
     </div>
   )
 }

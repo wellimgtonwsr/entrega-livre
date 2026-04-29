@@ -11,21 +11,7 @@ const PASSOS = [
   { key: 'IN_PROGRESS', label: 'Pacote entregue', nextStatus: 'DELIVERED', icon: '✅' },
 ]
 
-const s = {
-  wrap: { display: 'flex', flexDirection: 'column', height: '100dvh' },
-  mapWrap: { flex: 1, position: 'relative' },
-  card: { background: '#fff', padding: '16px 20px', boxShadow: '0 -4px 20px rgba(0,0,0,0.1)' },
-  valorBox: { background: '#fef3c7', borderRadius: 12, padding: '10px 14px', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  valorNum: { fontSize: 22, fontWeight: 800, color: '#1a1a2e' },
-  valorLbl: { fontSize: 13, color: '#92400e' },
-  clienteRow: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 },
-  avatar: { width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', background: '#e5e5e5' },
-  nome: { fontWeight: 700 },
-  telefone: { fontSize: 13, color: '#888' },
-  statusBtn: { width: '100%', padding: '15px', borderRadius: 14, border: 'none', fontSize: 17, fontWeight: 700, cursor: 'pointer' },
-  chatBtn: { position: 'absolute', bottom: 260, right: 16, background: '#f59e0b', border: 'none', borderRadius: '50%', width: 52, height: 52, fontSize: 22, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' },
-  navBtn: { display: 'block', textAlign: 'center', padding: '10px', background: '#1a1a2e', color: '#fff', borderRadius: 12, textDecoration: 'none', fontSize: 14, fontWeight: 600, marginBottom: 10 },
-}
+
 
 export default function EmAndamento() {
   const { pedidoId } = useParams()
@@ -77,7 +63,11 @@ export default function EmAndamento() {
     }
   }
 
-  if (!pedido) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh' }}>Carregando...</div>
+  if (!pedido) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh' }}>
+      <div className="spinner" />
+    </div>
+  )
 
   const passo = PASSOS.find(p => p.key === status)
   const destino = status === 'IN_PROGRESS'
@@ -88,8 +78,9 @@ export default function EmAndamento() {
   const clienteNome = pedido.cliente?.name || 'Cliente'
 
   return (
-    <div style={s.wrap}>
-      <div style={s.mapWrap}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
+      {/* Map */}
+      <div style={{ flex: 1, position: 'relative' }}>
         {isLoaded && (
           <GoogleMap
             mapContainerStyle={{ width: '100%', height: '100%' }}
@@ -101,36 +92,57 @@ export default function EmAndamento() {
             <Marker position={destino} label={status === 'IN_PROGRESS' ? 'B' : 'A'} />
           </GoogleMap>
         )}
-        <button style={s.chatBtn} onClick={() => setShowChat(true)}>💬</button>
+        <button
+          onClick={() => setShowChat(true)}
+          style={{
+            position: 'absolute', bottom: 260, right: 16,
+            background: 'var(--brand)', border: 'none', borderRadius: '50%',
+            width: 52, height: 52, fontSize: 22, cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(245,158,11,0.4)',
+          }}
+        >💬</button>
       </div>
 
-      <div style={s.card}>
-        <div style={s.valorBox}>
+      {/* Bottom card */}
+      <div style={{ background: 'var(--card)', padding: '16px 20px', boxShadow: '0 -4px 20px rgba(0,0,0,0.08)', paddingBottom: 'max(20px,env(safe-area-inset-bottom))' }}>
+        {/* Valor */}
+        <div style={{ background: 'var(--brand-light)', borderRadius: 12, padding: '10px 14px', marginBottom: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #fde68a' }}>
           <div>
-            <div style={s.valorLbl}>Você recebe (100%)</div>
-            <div style={s.valorNum}>R$ {pedido.valorFinal?.toFixed(2)}</div>
+            <div style={{ fontSize: 13, color: '#92400e' }}>Você recebe (100%)</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--dark)' }}>R$ {pedido.valorFinal?.toFixed(2)}</div>
           </div>
           <span style={{ fontSize: 28 }}>💰</span>
         </div>
 
-        <div style={s.clienteRow}>
-          <img style={s.avatar} src={pedido.cliente?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(clienteNome)}&background=1a1a2e&color=fff`} alt={clienteNome} />
-          <div>
-            <div style={s.nome}>{clienteNome}</div>
-            <div style={s.telefone}>{pedido.cliente?.phone}</div>
+        {/* Cliente */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+          <img
+            style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', background: 'var(--border)' }}
+            src={pedido.cliente?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(clienteNome)}&background=1a253e&color=fff`}
+            alt={clienteNome}
+          />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, color: 'var(--text)' }}>{clienteNome}</div>
+            <div style={{ fontSize: 13, color: 'var(--text3)' }}>{pedido.cliente?.phone}</div>
           </div>
-          <a href={`tel:${pedido.cliente?.phone}`} style={{ marginLeft: 'auto', background: '#1a1a2e', color: '#fff', padding: '8px 14px', borderRadius: 10, textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
+          <a href={`tel:${pedido.cliente?.phone}`} className="btn btn-sm" style={{ background: 'var(--dark)', color: '#fff', textDecoration: 'none' }}>
             📞
           </a>
         </div>
 
-        <a href={mapsURL} target="_blank" rel="noreferrer" style={s.navBtn}>
+        <a href={mapsURL} target="_blank" rel="noreferrer" className="btn" style={{ display: 'block', textAlign: 'center', background: 'var(--dark)', color: '#fff', textDecoration: 'none', marginBottom: 10, padding: 12 }}>
           🗺 Abrir navegação — {destino.endereco?.slice(0, 35)}...
         </a>
 
         {passo && (
           <button
-            style={{ ...s.statusBtn, background: passo.nextStatus === 'DELIVERED' ? '#10b981' : '#f59e0b', color: passo.nextStatus === 'DELIVERED' ? '#fff' : '#1a1a2e' }}
+            className="btn"
+            style={{
+              width: '100%', fontSize: 17, fontWeight: 700, padding: 15,
+              background: passo.nextStatus === 'DELIVERED' ? 'var(--success)' : 'var(--brand)',
+              color: passo.nextStatus === 'DELIVERED' ? '#fff' : 'var(--dark)',
+              border: 'none',
+            }}
             onClick={() => atualizarStatus(passo.nextStatus)}
             disabled={loading}
           >

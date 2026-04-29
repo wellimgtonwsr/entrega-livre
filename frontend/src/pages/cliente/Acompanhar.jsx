@@ -11,18 +11,7 @@ const STATUS_LABELS = {
   DELIVERED: '✅ Entregue!',
 }
 
-const s = {
-  wrap: { display: 'flex', flexDirection: 'column', height: '100dvh' },
-  mapWrap: { flex: 1, position: 'relative' },
-  card: { background: '#fff', padding: '16px 20px', boxShadow: '0 -4px 20px rgba(0,0,0,0.1)' },
-  statusBar: { background: '#1a1a2e', padding: '10px 16px', color: '#fff', fontSize: 14, fontWeight: 600 },
-  row: { display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 },
-  avatar: { width: 48, height: 48, borderRadius: '50%', background: '#e5e5e5', objectFit: 'cover' },
-  name: { fontWeight: 700, fontSize: 16 },
-  stars: { color: '#f59e0b', fontSize: 13 },
-  plate: { fontSize: 13, color: '#888' },
-  chatBtn: { position: 'absolute', bottom: 250, right: 16, background: '#f59e0b', border: 'none', borderRadius: '50%', width: 56, height: 56, fontSize: 24, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' },
-}
+
 
 export default function Acompanhar() {
   const { pedidoId } = useParams()
@@ -65,16 +54,24 @@ export default function Acompanhar() {
     }
   }, [socket, pedido?.motoboy?.id, pedidoId, navigate])
 
-  if (!isLoaded || !pedido) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh' }}>Carregando...</div>
+  if (!isLoaded || !pedido) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100dvh' }}>
+      <div className="spinner" />
+    </div>
+  )
 
   const motoboy = pedido.motoboy
   const nomeM = motoboy?.user?.name || 'Motoboy'
 
   return (
-    <div style={s.wrap}>
-      <div style={s.statusBar}>{STATUS_LABELS[status] || status}</div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
+      {/* Status bar */}
+      <div style={{ background: 'var(--dark)', padding: '10px 16px', color: '#fff', fontSize: 14, fontWeight: 600, zIndex: 1 }}>
+        {STATUS_LABELS[status] || status}
+      </div>
 
-      <div style={s.mapWrap}>
+      {/* Map */}
+      <div style={{ flex: 1, position: 'relative' }}>
         <GoogleMap
           mapContainerStyle={{ width: '100%', height: '100%' }}
           zoom={15}
@@ -86,25 +83,38 @@ export default function Acompanhar() {
           <Marker position={{ lat: pedido.destinoLat, lng: pedido.destinoLng }} label="B" />
         </GoogleMap>
 
-        <button style={s.chatBtn} onClick={() => setShowChat(true)}>💬</button>
+        <button
+          onClick={() => setShowChat(true)}
+          style={{
+            position: 'absolute', bottom: 220, right: 16,
+            background: 'var(--brand)', border: 'none', borderRadius: '50%',
+            width: 56, height: 56, fontSize: 24, cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(245,158,11,0.4)',
+          }}
+        >💬</button>
       </div>
 
-      <div style={s.card}>
-        <div style={s.row}>
-          <img style={s.avatar} src={motoboy?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nomeM)}&background=1a1a2e&color=fff`} alt={nomeM} />
-          <div>
-            <div style={s.name}>{nomeM}</div>
-            <div style={s.stars}>{'⭐'.repeat(Math.round(motoboy?.user?.rating || 5))} {motoboy?.user?.rating?.toFixed(1)}</div>
-            <div style={s.plate}>{motoboy?.vehicle} • {motoboy?.plate}</div>
+      {/* Motoboy card */}
+      <div style={{ background: 'var(--card)', padding: '16px 20px', boxShadow: '0 -4px 20px rgba(0,0,0,0.08)', paddingBottom: 'max(20px,env(safe-area-inset-bottom))' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
+          <img
+            style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', background: 'var(--border)' }}
+            src={motoboy?.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(nomeM)}&background=1a253e&color=fff`}
+            alt={nomeM}
+          />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text)' }}>{nomeM}</div>
+            <div style={{ color: 'var(--brand)', fontSize: 13 }}>{'⭐'.repeat(Math.round(motoboy?.user?.rating || 5))} {motoboy?.user?.rating?.toFixed(1)}</div>
+            <div style={{ fontSize: 13, color: 'var(--text3)' }}>{motoboy?.vehicle} • {motoboy?.plate}</div>
           </div>
-          <a href={`tel:${motoboy?.user?.phone}`} style={{ marginLeft: 'auto', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 12, padding: '10px 18px', textDecoration: 'none', fontWeight: 700 }}>
+          <a href={`tel:${motoboy?.user?.phone}`} className="btn btn-primary btn-sm">
             📞 Ligar
           </a>
         </div>
-        <div style={{ color: '#888', fontSize: 13 }}>
+        <div style={{ color: 'var(--text3)', fontSize: 13 }}>
           📍 {pedido.origemEndereco} → {pedido.destinoEndereco}
         </div>
-        <div style={{ color: '#1a1a2e', fontWeight: 700, fontSize: 16, marginTop: 6 }}>
+        <div style={{ color: 'var(--text)', fontWeight: 700, fontSize: 16, marginTop: 6 }}>
           Valor combinado: R$ {pedido.valorFinal?.toFixed(2)}
         </div>
       </div>

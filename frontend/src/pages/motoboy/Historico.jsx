@@ -12,19 +12,7 @@ const STATUS_LABELS = {
   EXPIRED: { label: 'Expirado', color: '#9ca3af' },
 }
 
-const s = {
-  wrap: { display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: '#f5f5f5' },
-  header: { background: '#1a1a2e', padding: '20px', color: '#fff' },
-  title: { fontSize: 20, fontWeight: 800 },
-  body: { flex: 1, padding: '16px 16px 80px' },
-  card: { background: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' },
-  row: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  status: { padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 700 },
-  rota: { color: '#444', fontSize: 14, marginBottom: 6 },
-  valor: { fontWeight: 800, fontSize: 20, color: '#10b981' },
-  data: { fontSize: 12, color: '#aaa' },
-  empty: { textAlign: 'center', color: '#aaa', marginTop: 60, fontSize: 15 },
-}
+
 
 export default function HistoricoMotoboy() {
   const navigate = useNavigate()
@@ -36,34 +24,35 @@ export default function HistoricoMotoboy() {
   }, [])
 
   return (
-    <div style={s.wrap}>
-      <div style={s.header}>
-        <div style={s.title}>Meu histórico 💰</div>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: 'var(--bg)' }}>
+      <div className="page-header">
+        <div className="page-header-title">Meu histórico 💰</div>
       </div>
-      <div style={s.body}>
-        {loading && <div style={s.empty}>Carregando...</div>}
-        {!loading && pedidos.length === 0 && <div style={s.empty}>Nenhuma corrida ainda</div>}
-
+      <div style={{ flex: 1, padding: '16px', paddingBottom: 'max(90px, calc(90px + env(safe-area-inset-bottom)))' }}>
+        {loading && <div style={{ textAlign: 'center', color: 'var(--text3)', marginTop: 60 }}><div className="spinner" style={{ margin: '0 auto' }} /></div>}
+        {!loading && pedidos.length === 0 && (
+          <div style={{ textAlign: 'center', color: 'var(--text3)', marginTop: 60 }}>
+            <div style={{ fontSize: 40, marginBottom: 10 }}>🛵</div>
+            <p style={{ fontWeight: 600 }}>Nenhuma corrida ainda</p>
+          </div>
+        )}
         {pedidos.map(p => {
-          const st = STATUS_LABELS[p.status] || { label: p.status, color: '#888' }
+          const st = STATUS_LABELS[p.status] || { label: p.status, color: 'var(--text3)' }
           return (
-            <div key={p.id} style={s.card}>
-              <div style={s.row}>
-                <span style={{ ...s.status, background: st.color + '22', color: st.color }}>{st.label}</span>
-                <span style={s.data}>{new Date(p.createdAt).toLocaleDateString('pt-BR')}</span>
+            <div key={p.id} className="card" style={{ marginBottom: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span className="badge" style={{ background: st.color + '22', color: st.color }}>{st.label}</span>
+                <span style={{ fontSize: 12, color: 'var(--text3)' }}>{new Date(p.createdAt).toLocaleDateString('pt-BR')}</span>
               </div>
-              <div style={s.rota}>📍 {p.origemEndereco}</div>
-              <div style={s.rota}>🏁 {p.destinoEndereco}</div>
+              <div style={{ color: 'var(--text2)', fontSize: 14, marginBottom: 4 }}>📍 {p.origemEndereco}</div>
+              <div style={{ color: 'var(--text2)', fontSize: 14, marginBottom: 8 }}>🏁 {p.destinoEndereco}</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={s.valor}>+R$ {(p.valorFinal ?? p.valorProposto).toFixed(2)}</div>
-                {p.status === 'ACCEPTED' || p.status === 'IN_PROGRESS' ? (
-                  <button
-                    onClick={() => navigate(`/motoboy/em-andamento/${p.id}`)}
-                    style={{ background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-                  >
+                <div style={{ fontWeight: 800, fontSize: 20, color: 'var(--success)' }}>+R$ {(p.valorFinal ?? p.valorProposto).toFixed(2)}</div>
+                {(p.status === 'ACCEPTED' || p.status === 'IN_PROGRESS') && (
+                  <button onClick={() => navigate(`/motoboy/em-andamento/${p.id}`)} className="btn btn-sm" style={{ background: 'var(--dark)', color: '#fff' }}>
                     Abrir
                   </button>
-                ) : null}
+                )}
               </div>
             </div>
           )

@@ -1,22 +1,27 @@
-const s = {
-  card: { background: '#fff', borderRadius: 14, padding: 14, marginBottom: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: 'pointer' },
-  route: { color: '#444', fontSize: 13, marginBottom: 4 },
-  row: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
-  valor: { fontSize: 20, fontWeight: 800, color: '#10b981' },
-  meta: { color: '#888', fontSize: 12 },
-}
-
 export default function CardPedido({ pedido, onClick }) {
   return (
-    <div style={s.card} onClick={onClick}>
-      <div style={s.route}>📍 {pedido.origemEndereco}</div>
-      <div style={s.route}>🏁 {pedido.destinoEndereco}</div>
-      <div style={s.row}>
-        <div style={s.valor}>R$ {pedido.valorProposto?.toFixed(2)}</div>
-        <div style={s.meta}>{pedido.distanciaKm?.toFixed(1)} km • {pedido.tempoEstimadoMin} min</div>
+    <div className="card" style={{ cursor: 'pointer', marginBottom: 10, padding: '14px 16px' }} onClick={onClick}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 8 }}>
+        <div style={{ fontSize: 13, color: 'var(--text2)' }}>
+          📍 <span style={{ fontWeight: 500 }}>{pedido.origemEndereco}</span>
+        </div>
+        <div style={{ fontSize: 13, color: 'var(--text2)' }}>
+          🏁 <span style={{ fontWeight: 500 }}>{pedido.destinoEndereco}</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--success)' }}>
+          R$ {pedido.valorProposto?.toFixed(2)}
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <span className="badge">{pedido.distanciaKm?.toFixed(1)} km</span>
+          <span className="badge">{pedido.tempoEstimadoMin} min</span>
+        </div>
       </div>
       {pedido.distanciaAteOrigem !== undefined && (
-        <div style={{ ...s.meta, marginTop: 4 }}>Você está a {pedido.distanciaAteOrigem.toFixed(1)} km da coleta</div>
+        <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 6 }}>
+          📡 Você está a {pedido.distanciaAteOrigem.toFixed(1)} km da coleta
+        </div>
       )}
     </div>
   )

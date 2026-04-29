@@ -82,6 +82,7 @@ app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/health', (_req, res) => res.json({ success: true, message: 'OK' }));
+app.get('/api/health', (_req, res) => res.json({ success: true, message: 'OK' }));
 
 // 404
 app.use((_req, res) => {

@@ -1,6 +1,8 @@
 const { validationResult } = require('express-validator');
 const { PrismaClient } = require('@prisma/client');
 const { calcularDistancia } = require('../utils/calcularDistancia');
+const { calcularRota } = require('../services/mapsService');
+const { calcularValor } = require('../services/precificacao.service');
 
 const prisma = new PrismaClient();
 const RAIO_KM = 5;
@@ -10,6 +12,36 @@ const paginar = (page, limit) => {
   const p = Math.max(1, parseInt(page) || 1);
   const l = Math.min(100, Math.max(1, parseInt(limit) || 20));
   return { skip: (p - 1) * l, take: l, page: p, limit: l };
+};
+
+// POST /api/pedidos/calcular
+// Recebe coords de origem e destino, devolve distancia, tempo e valor calculado pelo servidor
+exports.calcularValorEntrega = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ success: false, message: 'Dados inválidos', errors: errors.array() });
+
+    const { origemLat, origemLng, destinoLat, destinoLng } = req.body;
+
+    const rota = await calcularRota({
+      origemLat: parseFloat(origemLat),
+      origemLng: parseFloat(origemLng),
+      destinoLat: parseFloat(destinoLat),
+      destinoLng: parseFloat(destinoLng),
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        distanciaKm: rota.distanciaKm,
+        tempoEstimadoMin: rota.tempoEstimadoMin,
+        valorCalculado: rota.valorCalculado,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 // POST /api/pedidos
@@ -22,8 +54,16 @@ exports.criarPedido = async (req, res, next) => {
     const {
       origemEndereco, origemLat, origemLng,
       destinoEndereco, destinoLat, destinoLng,
-      distanciaKm, tempoEstimadoMin, valorProposto, descricao,
+      descricao,
     } = req.body;
+
+    // Calcular distância, tempo e valor via Google Maps (ou Haversine como fallback)
+    const rota = await calcularRota({
+      origemLat: parseFloat(origemLat),
+      origemLng: parseFloat(origemLng),
+      destinoLat: parseFloat(destinoLat),
+      destinoLng: parseFloat(destinoLng),
+    });
 
     const expiresAt = new Date(Date.now() + EXPIRACAO_MIN * 60 * 1000);
 
@@ -32,9 +72,10 @@ exports.criarPedido = async (req, res, next) => {
         clienteId: req.user.id,
         origemEndereco, origemLat: parseFloat(origemLat), origemLng: parseFloat(origemLng),
         destinoEndereco, destinoLat: parseFloat(destinoLat), destinoLng: parseFloat(destinoLng),
-        distanciaKm: parseFloat(distanciaKm),
-        tempoEstimadoMin: parseInt(tempoEstimadoMin),
-        valorProposto: parseFloat(valorProposto),
+        distanciaKm: rota.distanciaKm,
+        tempoEstimadoMin: rota.tempoEstimadoMin,
+        valorProposto: rota.valorCalculado,   // valor fixado pelo sistema
+        valorCalculado: rota.valorCalculado,  // cópia auditável
         descricao,
         expiresAt,
       },
