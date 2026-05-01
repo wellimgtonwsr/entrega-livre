@@ -24,7 +24,7 @@ export default function EmAndamento() {
   const [motoPos, setMotoPos] = useState(null)
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showChat, setShowChat] = useState(false)
+  const [chatAberto, setChatAberto] = useState(null) // 'cliente' | 'loja' | null
 
   useEffect(() => {
     api.get(`/pedidos/${pedidoId}`).then(r => {
@@ -93,13 +93,24 @@ export default function EmAndamento() {
           </GoogleMap>
         )}
         <button
-          onClick={() => setShowChat(true)}
+          onClick={() => setChatAberto('loja')}
+          style={{
+            position: 'absolute', bottom: 320, right: 16,
+            background: '#f59e0b', border: 'none', borderRadius: '50%',
+            width: 52, height: 52, fontSize: 22, cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(245,158,11,0.5)',
+          }}
+          title="Chat com a Loja"
+        >🏪</button>
+        <button
+          onClick={() => setChatAberto('cliente')}
           style={{
             position: 'absolute', bottom: 260, right: 16,
             background: 'var(--brand)', border: 'none', borderRadius: '50%',
             width: 52, height: 52, fontSize: 22, cursor: 'pointer',
             boxShadow: '0 4px 12px rgba(245,158,11,0.4)',
           }}
+          title="Chat com o Cliente"
         >💬</button>
       </div>
 
@@ -151,7 +162,12 @@ export default function EmAndamento() {
         )}
       </div>
 
-      {showChat && <Chat pedidoId={pedidoId} onClose={() => setShowChat(false)} />}
+      {chatAberto === 'cliente' && (
+        <Chat pedidoId={pedidoId} title="Chat com o Cliente" onClose={() => setChatAberto(null)} />
+      )}
+      {chatAberto === 'loja' && (
+        <Chat lojaId={pedidoId} title="Chat com a Loja" onClose={() => setChatAberto(null)} />
+      )}
     </div>
   )
 }

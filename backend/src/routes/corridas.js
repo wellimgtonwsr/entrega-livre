@@ -4,6 +4,19 @@ const ctrl = require('../controllers/corridaController');
 const auth = require('../middlewares/auth');
 const roles = require('../middlewares/roles');
 
+// POST /api/corridas/calcular — retorna distância, tempo e valor sugerido (sem criar corrida)
+router.post(
+  '/corridas/calcular',
+  auth,
+  [
+    body('origemLat').isFloat().withMessage('origemLat inválido'),
+    body('origemLng').isFloat().withMessage('origemLng inválido'),
+    body('destinoLat').isFloat().withMessage('destinoLat inválido'),
+    body('destinoLng').isFloat().withMessage('destinoLng inválido'),
+  ],
+  ctrl.calcularValorCorrida,
+);
+
 // POST /api/corridas — passageiro solicita corrida
 router.post(
   '/corridas',

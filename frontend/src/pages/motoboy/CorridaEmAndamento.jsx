@@ -4,6 +4,7 @@ import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api'
 import api from '../../services/api'
 import { useSocket } from '../../context/SocketContext'
 import { useAuth } from '../../context/AuthContext'
+import Chat from '../../components/Chat'
 
 const PASSOS = [
   { key: 'ACEITA', label: 'Cheguei no local', nextStatus: 'EM_ANDAMENTO', icon: '📍' },
@@ -21,6 +22,7 @@ export default function CorridaEmAndamento() {
   const [motoPos, setMotoPos] = useState(null)
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showChat, setShowChat] = useState(false)
 
   useEffect(() => {
     api.get(`/corridas/${corridaId}`).then(r => {
@@ -91,7 +93,7 @@ export default function CorridaEmAndamento() {
       </div>
 
       {/* Mapa */}
-      <div style={{ height: '40dvh', flexShrink: 0 }}>
+      <div style={{ height: '40dvh', flexShrink: 0, position: 'relative' }}>
         {isLoaded && (
           <GoogleMap
             mapContainerStyle={{ width: '100%', height: '100%' }}
@@ -109,6 +111,17 @@ export default function CorridaEmAndamento() {
             <Marker position={{ lat: corrida.destinoLat, lng: corrida.destinoLng }} label="B" />
           </GoogleMap>
         )}
+        {/* Botão chat flutuante */}
+        <button
+          onClick={() => setShowChat(true)}
+          style={{
+            position: 'absolute', bottom: 16, right: 16,
+            background: '#6366f1', border: 'none', borderRadius: '50%',
+            width: 52, height: 52, fontSize: 22, cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(99,102,241,0.5)', zIndex: 10,
+          }}
+          title="Chat com o Passageiro"
+        >💬</button>
       </div>
 
       {/* Detalhes */}
@@ -165,6 +178,10 @@ export default function CorridaEmAndamento() {
           </button>
         )}
       </div>
+
+      {showChat && (
+        <Chat corridaId={corridaId} title="Chat com o Passageiro" onClose={() => setShowChat(false)} />
+      )}
     </div>
   )
 }

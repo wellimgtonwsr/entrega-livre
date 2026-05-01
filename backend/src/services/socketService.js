@@ -93,6 +93,32 @@ exports.initSocket = (io) => {
       socket.join(`pedido_rest:${pedidoId}`);
     });
 
+    // ── Chat Loja ↔ Motoboy ───────────────────────────────────────────────────
+
+    // Entra na sala de chat com a loja (mesma pedidoId, sala separada)
+    socket.on('pedido_loja:join', ({ pedidoId }) => {
+      socket.join(`pedido_loja:${pedidoId}`);
+    });
+
+    // Motoboy ou loja enviam mensagem
+    socket.on('loja:chat:enviar', ({ pedidoId, texto, senderId }) => {
+      const msg = { pedidoId, senderId, texto, id: Date.now(), createdAt: new Date() };
+      io.to(`pedido_loja:${pedidoId}`).emit('loja:chat:receber', msg);
+    });
+
+    // ── Chat Corrida (Mototaxi) ↔ Passageiro ─────────────────────────────────
+
+    // Entra na sala da corrida para chat (corrida:${corridaId} já existe, reutiliza)
+    socket.on('corrida:chat:join', ({ corridaId }) => {
+      socket.join(`corrida:${corridaId}`);
+    });
+
+    // Motoboy ou passageiro enviam mensagem na corrida
+    socket.on('corrida:chat:enviar', ({ corridaId, texto, senderId }) => {
+      const msg = { corridaId, senderId, texto, id: Date.now(), createdAt: new Date() };
+      io.to(`corrida:${corridaId}`).emit('corrida:chat:receber', msg);
+    });
+
     socket.on('disconnect', () => {
       for (const [motoboyId, sid] of onlineMotoboys.entries()) {
         if (sid === socket.id) {

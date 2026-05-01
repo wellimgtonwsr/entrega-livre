@@ -22,6 +22,26 @@ function haversineKm(lat1, lng1, lat2, lng2) {
 
 // ─── Controllers ──────────────────────────────────────────────────────────────
 
+// POST /api/corridas/calcular — calcula distância, tempo e valor sugerido (sem criar)
+exports.calcularValorCorrida = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ success: false, message: 'Dados inválidos', errors: errors.array() });
+
+    const { origemLat, origemLng, destinoLat, destinoLng } = req.body;
+    const rota = await calcularRota({
+      origemLat: parseFloat(origemLat),
+      origemLng: parseFloat(origemLng),
+      destinoLat: parseFloat(destinoLat),
+      destinoLng: parseFloat(destinoLng),
+    });
+    return res.json({ success: true, data: rota });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // POST /api/corridas
 exports.criarCorrida = async (req, res, next) => {
   try {

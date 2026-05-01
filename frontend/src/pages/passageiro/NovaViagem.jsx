@@ -5,9 +5,6 @@ import api from '../../services/api'
 import BottomNav from '../../components/BottomNav'
 
 const LIBRARIES = ['places']
-// Sugestão base para mototaxi (cliente pode alterar livremente — modelo inDrive)
-const SUGESTAO_POR_KM = 3.0
-const SUGESTAO_MINIMA = 7
 
 export default function NovaViagem() {
   const navigate = useNavigate()
@@ -22,6 +19,7 @@ export default function NovaViagem() {
   const [destino, setDestino] = useState(null)
   const [rota, setRota] = useState(null)
   const [valor, setValor] = useState('')
+  const [sugestaoServidor, setSugestaoServidor] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -37,15 +35,28 @@ export default function NovaViagem() {
       origin: { lat: o.lat, lng: o.lng },
       destination: { lat: d.lat, lng: d.lng },
       travelMode: window.google.maps.TravelMode.DRIVING,
-    }, (result, status) => {
-      if (status === 'OK') {
-        setDirections(result)
-        const leg = result.routes[0].legs[0]
-        const km = leg.distance.value / 1000
-        const min = Math.ceil(leg.duration.value / 60)
-        setRota({ distanciaKm: km, tempoEstimadoMin: min })
-        const sug = Math.max(SUGESTAO_MINIMA, km * SUGESTAO_POR_KM).toFixed(2)
-        setValor(sug)
+    }, async (result, status) => {
+      if (status !== 'OK') return
+      setDirections(result)
+      const leg = result.routes[0].legs[0]
+      const km = leg.distance.value / 1000
+      const min = Math.ceil(leg.duration.value / 60)
+      setRota({ distanciaKm: km, tempoEstimadoMin: min })
+
+      // Buscar valor oficial do servidor (via Google Maps ou Haversine como fallback)
+      try {
+        const res = await api.post('/corridas/calcular', {
+          origemLat: o.lat, origemLng: o.lng,
+          destinoLat: d.lat, destinoLng: d.lng,
+        })
+        const sug = res.data.data.valorCalculado
+        setSugestaoServidor(sug)
+        setValor(sug.toFixed(2))
+      } catch {
+        // fallback local: R$ 3/km mínimo R$ 7
+        const sug = Math.max(7, km * 3)
+        setSugestaoServidor(null)
+        setValor(sug.toFixed(2))
       }
     })
   }, [])
@@ -207,7 +218,10 @@ export default function NovaViagem() {
           />
           {rota && (
             <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text2)', marginTop: 6 }}>
-              💡 Sugestão: <strong>R$ {Math.max(SUGESTAO_MINIMA, rota.distanciaKm * SUGESTAO_POR_KM).toFixed(2)}</strong> — você pode propor qualquer valor
+              {sugestaoServidor
+                ? <>🗺️ Calculado pelo Google Maps: <strong>R$ {sugestaoServidor.toFixed(2)}</strong> — você pode propor qualquer valor</>
+                : <>💡 Sugestão: <strong>R$ {valor}</strong> — você pode propor qualquer valor</>
+              }
             </p>
           )}
         </div>
