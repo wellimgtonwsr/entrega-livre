@@ -20,7 +20,7 @@ export default function AcompanharViagem() {
 
   useEffect(() => {
     api.get(`/corridas/${corridaId}`).then(({ data }) => {
-      setCorrida(data)
+      setCorrida(data.data)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [corridaId])
@@ -42,7 +42,7 @@ export default function AcompanharViagem() {
     socket.emit('entrar_corrida', corridaId)
     socket.on('motoboy_location', ({ lat, lng }) => setMotoboyPos({ lat, lng }))
     socket.on('corrida_status', ({ status }) => {
-      if (status === 'CONCLUIDA') navigate(`/passageiro/avaliar/${corridaId}`)
+      if (status === 'CONCLUIDA') navigate('/splash')
       if (status === 'CANCELADA') navigate('/passageiro/nova-viagem')
     })
     return () => {
@@ -155,7 +155,7 @@ export default function AcompanharViagem() {
           {/* Value */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', background: '#f0f0ff', borderRadius: 12 }}>
             <span style={{ fontWeight: 600, color: 'var(--text)' }}>Valor da corrida</span>
-            <span style={{ fontWeight: 900, fontSize: 20, color: '#6366f1' }}>R$ {Number(corrida.valorSugerido).toFixed(2)}</span>
+            <span style={{ fontWeight: 900, fontSize: 20, color: '#6366f1' }}>R$ {Number(corrida.valorFinal || corrida.valorSugerido).toFixed(2)}</span>
           </div>
         </div>
       )}

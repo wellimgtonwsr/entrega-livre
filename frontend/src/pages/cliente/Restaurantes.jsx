@@ -13,13 +13,13 @@ export default function Restaurantes() {
   const [categoria, setCategoria] = useState('Todos')
 
   useEffect(() => {
-    api.get('/lojas').then(r => setLojas(r.data.data || [])).catch(() => {}).finally(() => setLoading(false))
+    api.get('/restaurantes').then(r => setLojas(r.data.data || [])).catch(() => {}).finally(() => setLoading(false))
   }, [])
 
   const filtradas = lojas.filter(l => {
     const matchBusca = l.nome.toLowerCase().includes(busca.toLowerCase())
     const matchCat = categoria === 'Todos' || l.categoria === categoria
-    return matchBusca && matchCat && l.ativa
+    return matchBusca && matchCat
   })
 
   return (
@@ -37,10 +37,8 @@ export default function Restaurantes() {
           </button>
         </div>
 
-        {/* Barra de busca */}
         <input
-          className="inp"
-          style={{ marginTop: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', '::placeholder': { color: 'rgba(255,255,255,0.4)' } }}
+          style={{ marginTop: 12, width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none' }}
           placeholder="🔍 Buscar restaurante..."
           value={busca}
           onChange={e => setBusca(e.target.value)}
@@ -78,50 +76,37 @@ export default function Restaurantes() {
           </div>
         )}
 
-        {/* Grid de lojas */}
-        <div style={{ display: 'grid', gap: 14 }}>
-          {filtradas.map(loja => (
-            <div
-              key={loja.id}
-              className="card"
-              style={{ cursor: 'pointer', padding: 0, overflow: 'hidden' }}
-              onClick={() => navigate(`/restaurante/${loja.id}`)}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {filtradas.map(l => (
+            <button
+              key={l.id}
+              onClick={() => navigate(`/restaurantes/${l.id}`)}
+              style={{
+                background: '#fff', border: 'none', borderRadius: 16, padding: 0,
+                overflow: 'hidden', cursor: 'pointer', textAlign: 'left',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                display: 'flex', alignItems: 'center',
+              }}
             >
-              {/* Banner */}
               <div style={{
-                height: 140, background: loja.foto ? `url(${loja.foto}) center/cover` : 'linear-gradient(135deg,#1a253e,#0f1729)',
-                display: 'flex', alignItems: 'flex-end', padding: '12px 14px',
-                position: 'relative',
+                width: 80, height: 80, flexShrink: 0,
+                background: l.logo ? 'transparent' : 'linear-gradient(135deg,#f59e0b,#d97706)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32,
               }}>
-                {!loja.foto && (
-                  <div style={{ fontSize: 48, position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-60%)' }}>
-                    {loja.categoria === 'Pizzaria' ? '🍕' : loja.categoria === 'Japonês' ? '🍱' : loja.categoria === 'Açaí' ? '🍇' : loja.categoria === 'Mercado' ? '🏪' : '🍔'}
-                  </div>
-                )}
-                <span style={{ background: 'rgba(0,0,0,0.55)', color: '#fff', fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 99 }}>
-                  {loja.categoria}
-                </span>
+                {l.logo ? <img src={l.logo} alt={l.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '🍔'}
               </div>
-
-              {/* Info */}
-              <div style={{ padding: '12px 14px' }}>
-                <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--text)', marginBottom: 4 }}>{loja.nome}</div>
-                {loja.descricao && <div style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 8 }}>{loja.descricao}</div>}
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span className="badge" style={{ background: '#dcfce7', color: '#166534' }}>⭐ {loja.avaliacao?.toFixed(1) || '5.0'}</span>
-                  <span className="badge">🕒 {loja.tempoEntrega || '30-45'} min</span>
-                  {loja.taxaEntrega === 0
-                    ? <span className="badge" style={{ background: '#dcfce7', color: '#166534' }}>🆓 Frete grátis</span>
-                    : <span className="badge">🛵 R$ {loja.taxaEntrega?.toFixed(2)}</span>
-                  }
-                </div>
+              <div style={{ padding: '12px 14px', flex: 1 }}>
+                <div style={{ fontWeight: 800, fontSize: 15, color: '#1a253e', marginBottom: 2 }}>{l.nome}</div>
+                {l.descricao && <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>{l.descricao}</div>}
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', background: '#fff8ec', padding: '2px 8px', borderRadius: 99 }}>{l.categoria}</span>
               </div>
-            </div>
+              <div style={{ paddingRight: 14, color: '#f59e0b', fontSize: 20, fontWeight: 700 }}>›</div>
+            </button>
           ))}
         </div>
       </div>
 
-      <BottomNav role="CLIENT" />
+      <BottomNav />
     </div>
   )
 }

@@ -45,6 +45,25 @@ exports.initSocket = (io) => {
       socket.join(`pedido:${pedidoId}`);
     });
 
+    // ── Mototaxi ──────────────────────────────────────────────────────────────
+
+    // Passageiro / motoboy entram na sala da corrida
+    socket.on('entrar_corrida', (corridaId) => {
+      socket.join(`corrida:${corridaId}`);
+    });
+
+    // Motoboy envia localização durante corrida (passageiro acompanha)
+    socket.on('corrida:location', async ({ corridaId, motoboyId, lat, lng }) => {
+      try {
+        await prisma.motoboy.updateMany({
+          where: { id: motoboyId },
+          data: { lat: parseFloat(lat), lng: parseFloat(lng), locationAt: new Date() },
+        });
+        // Emitir para todos na sala da corrida (passageiro)
+        socket.to(`corrida:${corridaId}`).emit('motoboy_location', { lat, lng });
+      } catch {}
+    });
+
     // Chat durante a corrida
     socket.on('chat:enviar', async ({ pedidoId, texto, senderId }) => {
       try {
@@ -60,6 +79,18 @@ exports.initSocket = (io) => {
           createdAt: mensagem.createdAt,
         });
       } catch {}
+    });
+
+    // ── Restaurante ───────────────────────────────────────────────────────────
+
+    // Admin entra na sala do restaurante para receber novos pedidos
+    socket.on('entrar_restaurante', (restauranteId) => {
+      socket.join(`restaurante:${restauranteId}`);
+    });
+
+    // Cliente entra na sala do pedido de restaurante para acompanhar status
+    socket.on('entrar_pedido_rest', (pedidoId) => {
+      socket.join(`pedido_rest:${pedidoId}`);
     });
 
     socket.on('disconnect', () => {

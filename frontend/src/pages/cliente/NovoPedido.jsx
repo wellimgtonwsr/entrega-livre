@@ -5,8 +5,6 @@ import api from '../../services/api'
 import BottomNav from '../../components/BottomNav'
 
 const LIBRARIES = ['places']
-const PRECO_POR_KM = 2.5
-const PRECO_MINIMO = 8
 
 export default function NovoPedido() {
   const navigate = useNavigate()
@@ -21,6 +19,7 @@ export default function NovoPedido() {
   const [destino, setDestino] = useState(null)
   const [rota, setRota] = useState(null)
   const [valor, setValor] = useState('')
+  const [sugestaoServidor, setSugestaoServidor] = useState(null)
   const [descricao, setDescricao] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -37,15 +36,27 @@ export default function NovoPedido() {
       origin: { lat: o.lat, lng: o.lng },
       destination: { lat: d.lat, lng: d.lng },
       travelMode: window.google.maps.TravelMode.DRIVING,
-    }, (result, status) => {
-      if (status === 'OK') {
-        setDirections(result)
-        const leg = result.routes[0].legs[0]
-        const km = leg.distance.value / 1000
-        const min = Math.ceil(leg.duration.value / 60)
-        setRota({ distanciaKm: km, tempoEstimadoMin: min })
-        const sug = Math.max(PRECO_MINIMO, km * PRECO_POR_KM).toFixed(2)
-        setValor(sug)
+    }, async (result, status) => {
+      if (status !== 'OK') return
+      setDirections(result)
+      const leg = result.routes[0].legs[0]
+      const km = leg.distance.value / 1000
+      const min = Math.ceil(leg.duration.value / 60)
+      setRota({ distanciaKm: km, tempoEstimadoMin: min })
+
+      // Buscar sugestão de preço do servidor (fórmula oficial)
+      try {
+        const res = await api.post('/pedidos/calcular', {
+          origemLat: o.lat, origemLng: o.lng,
+          destinoLat: d.lat, destinoLng: d.lng,
+        })
+        const sug = res.data.data.valorCalculado
+        setSugestaoServidor(sug)
+        setValor(sug.toFixed(2))
+      } catch {
+        // fallback: usar km calculado pelo Maps
+        setSugestaoServidor(null)
+        setValor((km * 2).toFixed(2))
       }
     })
   }, [])
@@ -189,9 +200,14 @@ export default function NovoPedido() {
               boxShadow: '0 0 0 3px rgba(245,158,11,0.12)',
             }}
           />
-          {rota && (
+          {sugestaoServidor && (
             <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text2)', marginTop: 6 }}>
-              💡 Sugestão: <strong>R$ {Math.max(PRECO_MINIMO, rota.distanciaKm * PRECO_POR_KM).toFixed(2)}</strong>
+              💡 Sugestão do sistema: <strong
+                onClick={() => setValor(sugestaoServidor.toFixed(2))}
+                style={{ color: 'var(--brand)', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                R$ {sugestaoServidor.toFixed(2)}
+              </strong> <span style={{ color: 'var(--text3)' }}>(toque para aplicar)</span>
             </p>
           )}
         </div>

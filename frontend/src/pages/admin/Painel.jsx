@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 
 
 
 export default function PainelAdmin() {
+  const navigate = useNavigate()
   const [metricas, setMetricas] = useState(null)
   const [receita, setReceita] = useState(null)
   const [motoboys, setMotoboys] = useState([])
@@ -41,7 +43,16 @@ export default function PainelAdmin() {
     <div style={{ minHeight: '100dvh', background: 'var(--dark)', color: '#fff', padding: 20 }}>
       <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Painel Admin ⚙️</div>
 
-      {/* Métricas */}
+      {/* Atalhos */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+        <button onClick={() => navigate('/admin/restaurantes')} style={{ flex: 1, background: 'linear-gradient(135deg,#f59e0b,#d97706)', border: 'none', borderRadius: 14, padding: '14px 16px', color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 24 }}>🍔</span>
+          <div style={{ textAlign: 'left' }}>
+            <div>Restaurantes</div>
+            <div style={{ fontSize: 11, opacity: 0.8, fontWeight: 500 }}>Cardápio e pedidos</div>
+          </div>
+        </button>
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 20 }}>
         {[
           { label: 'Pedidos totais', val: metricas?.totalPedidos },

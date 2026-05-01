@@ -21,10 +21,12 @@ model User {
   createdAt   DateTime @default(now())
 
   motoboy             Motoboy?
-  pedidosCliente      Pedido[]    @relation("ClientePedidos")
-  avaliacoesFeitas    Avaliacao[] @relation("AvaliacoesFeitas")
-  avaliacoesRecebidas Avaliacao[] @relation("AvaliacoesRecebidas")
+  pedidosCliente      Pedido[]              @relation("ClientePedidos")
+  avaliacoesFeitas    Avaliacao[]           @relation("AvaliacoesFeitas")
+  avaliacoesRecebidas Avaliacao[]           @relation("AvaliacoesRecebidas")
   mensagens           Mensagem[]
+  corridasPassageiro  Corrida[]             @relation("CorridasPassageiro")
+  pedidosRestaurante  PedidoRestaurante[]   @relation("PedidosRestauranteCliente")
 }
 
 enum Role {
@@ -46,9 +48,11 @@ model Motoboy {
   lng        Float?
   locationAt DateTime?
 
-  assinatura Assinatura?
-  pedidos    Pedido[]    @relation("MotoboyPedidos")
-  propostas  Proposta[]
+  assinatura       Assinatura?
+  pedidos          Pedido[]         @relation("MotoboyPedidos")
+  propostas        Proposta[]
+  corridas         Corrida[]        @relation("MotoboysCorridas")
+  propostasCorrida PropostaCorrida[]
 }
 
 enum MotoboyStatus {
@@ -163,4 +167,133 @@ model Avaliacao {
   nota        Int
   comentario  String?
   createdAt   DateTime @default(now())
+}
+
+// ── Mototaxi ──────────────────────────────────────────────────────────────────
+
+model Corrida {
+  id               String        @id @default(uuid())
+  passageiroId     String
+  passageiro       User          @relation("CorridasPassageiro", fields: [passageiroId], references: [id])
+  motoboyId        String?
+  motoboy          Motoboy?      @relation("MotoboysCorridas", fields: [motoboyId], references: [id])
+  origemEndereco   String
+  origemLat        Float
+  origemLng        Float
+  destinoEndereco  String
+  destinoLat       Float
+  destinoLng       Float
+  distanciaKm      Float
+  tempoEstimadoMin Int
+  valorSugerido    Float
+  valorFinal       Float?
+  status           CorridaStatus @default(AGUARDANDO)
+  expiresAt        DateTime
+  aceitaAt         DateTime?
+  concluidaAt      DateTime?
+  createdAt        DateTime      @default(now())
+
+  propostas PropostaCorrida[]
+}
+
+enum CorridaStatus {
+  AGUARDANDO
+  ACEITA
+  EM_ANDAMENTO
+  CONCLUIDA
+  CANCELADA
+  EXPIRADA
+}
+
+model PropostaCorrida {
+  id        String                @id @default(uuid())
+  corridaId String
+  corrida   Corrida               @relation(fields: [corridaId], references: [id])
+  motoboyId String
+  motoboy   Motoboy               @relation(fields: [motoboyId], references: [id])
+  valor     Float
+  status    PropostaCorridaStatus @default(PENDENTE)
+  createdAt DateTime              @default(now())
+}
+
+enum PropostaCorridaStatus {
+  PENDENTE
+  ACEITA
+  REJEITADA
+}
+
+// ── Restaurantes ──────────────────────────────────────────────────────────────
+
+model Restaurante {
+  id        String   @id @default(uuid())
+  nome      String
+  descricao String?
+  categoria String   @default("Restaurante")
+  logo      String?
+  endereco  String?
+  ativa     Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  categorias CategoriaCardapio[]
+  produtos   ProdutoCardapio[]
+  pedidos    PedidoRestaurante[]
+}
+
+model CategoriaCardapio {
+  id            String      @id @default(uuid())
+  nome          String
+  icone         String?     @default("🍽️")
+  restauranteId String
+  restaurante   Restaurante @relation(fields: [restauranteId], references: [id])
+  produtos      ProdutoCardapio[]
+
+  @@unique([nome, restauranteId])
+}
+
+model ProdutoCardapio {
+  id            String            @id @default(uuid())
+  nome          String
+  preco         Float
+  descricao     String?
+  imagem        String?
+  disponivel    Boolean           @default(true)
+  categoriaId   String
+  categoria     CategoriaCardapio @relation(fields: [categoriaId], references: [id])
+  restauranteId String
+  restaurante   Restaurante       @relation(fields: [restauranteId], references: [id])
+  createdAt     DateTime          @default(now())
+}
+
+model PedidoRestaurante {
+  id            String                  @id @default(uuid())
+  numero        Int
+  nomeCliente   String                  @default("-")
+  total         Float
+  observacoes   String?
+  status        StatusPedidoRestaurante @default(PENDENTE)
+  restauranteId String
+  restaurante   Restaurante             @relation(fields: [restauranteId], references: [id])
+  clienteId     String?
+  cliente       User?                   @relation("PedidosRestauranteCliente", fields: [clienteId], references: [id])
+  createdAt     DateTime                @default(now())
+
+  itens ItemPedidoRestaurante[]
+}
+
+model ItemPedidoRestaurante {
+  id        String            @id @default(uuid())
+  nome      String
+  preco     Float
+  quantidade Int              @default(1)
+  imagem    String?
+  pedidoId  String
+  pedido    PedidoRestaurante @relation(fields: [pedidoId], references: [id])
+}
+
+enum StatusPedidoRestaurante {
+  PENDENTE
+  PREPARANDO
+  PRONTO
+  CANCELADO
+  CONCLUIDO
 }

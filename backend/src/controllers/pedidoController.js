@@ -54,16 +54,21 @@ exports.criarPedido = async (req, res, next) => {
     const {
       origemEndereco, origemLat, origemLng,
       destinoEndereco, destinoLat, destinoLng,
+      valorProposto,
       descricao,
     } = req.body;
 
-    // Calcular distância, tempo e valor via Google Maps (ou Haversine como fallback)
+    // Calcular distância, tempo e valor de referência via Google Maps (ou Haversine como fallback)
     const rota = await calcularRota({
       origemLat: parseFloat(origemLat),
       origemLng: parseFloat(origemLng),
       destinoLat: parseFloat(destinoLat),
       destinoLng: parseFloat(destinoLng),
     });
+
+    // Modelo inDrive: o cliente define o valor; valorCalculado é apenas referência
+    const VALOR_MINIMO = 7;
+    const valorCliente = Math.max(VALOR_MINIMO, parseFloat(valorProposto));
 
     const expiresAt = new Date(Date.now() + EXPIRACAO_MIN * 60 * 1000);
 
@@ -74,8 +79,8 @@ exports.criarPedido = async (req, res, next) => {
         destinoEndereco, destinoLat: parseFloat(destinoLat), destinoLng: parseFloat(destinoLng),
         distanciaKm: rota.distanciaKm,
         tempoEstimadoMin: rota.tempoEstimadoMin,
-        valorProposto: rota.valorCalculado,   // valor fixado pelo sistema
-        valorCalculado: rota.valorCalculado,  // cópia auditável
+        valorProposto: valorCliente,          // valor definido pelo cliente
+        valorCalculado: rota.valorCalculado,  // referência do sistema (auditável)
         descricao,
         expiresAt,
       },

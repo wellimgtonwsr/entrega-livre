@@ -23,6 +23,8 @@ const pedidoRoutes = require('./src/routes/pedidos');
 const propostaRoutes = require('./src/routes/propostas');
 const assinaturaRoutes = require('./src/routes/assinatura');
 const adminRoutes = require('./src/routes/admin');
+const corridaRoutes = require('./src/routes/corridas');
+const restauranteRoutes = require('./src/routes/restaurantes');
 const { initSocket } = require('./src/services/socketService');
 
 const app = express();
@@ -78,7 +80,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api', pedidoRoutes);
 app.use('/api', propostaRoutes);
 app.use('/api', assinaturaRoutes);
+app.use('/api', corridaRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api', restauranteRoutes);
 
 // Health check
 app.get('/health', (_req, res) => res.json({ success: true, message: 'OK' }));
@@ -110,8 +114,13 @@ cron.schedule('* * * * *', async () => {
       where: { status: 'WAITING_OFFERS', expiresAt: { lt: now } },
       data: { status: 'EXPIRED' },
     });
+    // Expirar corridas de mototaxi
+    await prisma.corrida.updateMany({
+      where: { status: 'AGUARDANDO', expiresAt: { lt: now } },
+      data: { status: 'EXPIRADA' },
+    });
   } catch (e) {
-    console.error('[CRON] Erro ao expirar pedidos:', e.message);
+    console.error('[CRON] Erro ao expirar pedidos/corridas:', e.message);
   }
 });
 

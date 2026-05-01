@@ -5,8 +5,9 @@ import api from '../../services/api'
 import BottomNav from '../../components/BottomNav'
 
 const LIBRARIES = ['places']
-const PRECO_POR_KM = 3.0
-const PRECO_MINIMO = 6
+// Sugestão base para mototaxi (cliente pode alterar livremente — modelo inDrive)
+const SUGESTAO_POR_KM = 3.0
+const SUGESTAO_MINIMA = 7
 
 export default function NovaViagem() {
   const navigate = useNavigate()
@@ -43,7 +44,7 @@ export default function NovaViagem() {
         const km = leg.distance.value / 1000
         const min = Math.ceil(leg.duration.value / 60)
         setRota({ distanciaKm: km, tempoEstimadoMin: min })
-        const sug = Math.max(PRECO_MINIMO, km * PRECO_POR_KM).toFixed(2)
+        const sug = Math.max(SUGESTAO_MINIMA, km * SUGESTAO_POR_KM).toFixed(2)
         setValor(sug)
       }
     })
@@ -90,7 +91,7 @@ export default function NovaViagem() {
         tempoEstimadoMin: rota.tempoEstimadoMin,
         valorSugerido: parseFloat(valor),
       })
-      navigate(`/passageiro/aguardando/${data.id}`)
+      navigate(`/passageiro/aguardando/${data.data.id}`)
     } catch (e) {
       setError(e.response?.data?.error || 'Erro ao solicitar corrida')
     } finally {
@@ -189,7 +190,7 @@ export default function NovaViagem() {
 
         {/* Valor */}
         <div className="form-group">
-          <label className="lbl">💰 Valor da corrida (R$)</label>
+          <label className="lbl">💰 Quanto você quer pagar? (R$)</label>
           <input
             className="inp"
             type="number"
@@ -197,11 +198,16 @@ export default function NovaViagem() {
             step="0.50"
             value={valor}
             onChange={e => setValor(e.target.value)}
-            placeholder="Valor sugerido automaticamente"
+            placeholder="R$ 0,00"
+            style={{
+              fontSize: 22, fontWeight: 800, textAlign: 'center',
+              border: '2px solid #6366f1',
+              boxShadow: '0 0 0 3px rgba(99,102,241,0.10)',
+            }}
           />
           {rota && (
-            <p style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>
-              Sugestão: R$ {Math.max(PRECO_MINIMO, rota.distanciaKm * PRECO_POR_KM).toFixed(2)} (R$ {PRECO_POR_KM}/km)
+            <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text2)', marginTop: 6 }}>
+              💡 Sugestão: <strong>R$ {Math.max(SUGESTAO_MINIMA, rota.distanciaKm * SUGESTAO_POR_KM).toFixed(2)}</strong> — você pode propor qualquer valor
             </p>
           )}
         </div>

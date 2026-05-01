@@ -1,5 +1,7 @@
 const router = require('express').Router();
 const { body } = require('express-validator');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 const ctrl = require('../controllers/pedidoController');
 const auth = require('../middlewares/auth');
 const roles = require('../middlewares/roles');
@@ -11,8 +13,6 @@ router.put('/motoboy/localizacao', auth, roles('MOTOBOY'), async (req, res, next
     if (!lat || !lng)
       return res.status(400).json({ success: false, message: 'lat e lng obrigatórios' });
 
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
     const motoboy = await prisma.motoboy.findUnique({ where: { userId: req.user.id } });
     if (!motoboy) return res.status(404).json({ success: false, message: 'Motoboy não encontrado' });
 
@@ -34,8 +34,6 @@ router.put('/motoboy/localizacao', auth, roles('MOTOBOY'), async (req, res, next
 
 router.get('/motoboy/:id/localizacao', auth, async (req, res, next) => {
   try {
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
     const motoboy = await prisma.motoboy.findUnique({
       where: { id: req.params.id },
       select: { lat: true, lng: true, locationAt: true },
@@ -54,8 +52,6 @@ router.post('/avaliacoes', auth, [
   body('nota').isInt({ min: 1, max: 5 }),
 ], async (req, res, next) => {
   try {
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
     const { pedidoId, avaliadoId, nota, comentario } = req.body;
 
     const pedido = await prisma.pedido.findUnique({ where: { id: pedidoId } });
@@ -90,8 +86,6 @@ router.post('/avaliacoes', auth, [
 
 router.get('/usuarios/:id/avaliacoes', auth, async (req, res, next) => {
   try {
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(50, parseInt(req.query.limit) || 20);
     const skip = (page - 1) * limit;
@@ -132,6 +126,7 @@ router.post('/pedidos', auth, roles('CLIENT'), [
   body('destinoEndereco').notEmpty(),
   body('destinoLat').isNumeric(),
   body('destinoLng').isNumeric(),
+  body('valorProposto').isFloat({ min: 7 }).withMessage('valorProposto deve ser no mínimo R$ 7,00'),
 ], ctrl.criarPedido);
 
 router.get('/pedidos/historico', auth, ctrl.historico);

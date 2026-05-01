@@ -16,7 +16,7 @@ export default function AguardandoMototaxi() {
 
   useEffect(() => {
     api.get(`/corridas/${corridaId}`).then(({ data }) => {
-      setCorrida(data)
+      setCorrida(data.data)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [corridaId])
