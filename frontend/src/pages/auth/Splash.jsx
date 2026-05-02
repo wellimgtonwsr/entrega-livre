@@ -56,7 +56,7 @@ export default function Splash() {
 
       {/* Logo */}
       <div style={{ padding: '36px 20px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <img src="/entrega-livre/logo.png" alt="Entrega Livre" style={{ width: '100%', maxWidth: 220, objectFit: 'contain' }} />
+        <img src="/entrega-livre/logo.png" alt="Entrega Livre" style={{ width: '100%', maxWidth: 300, objectFit: 'contain' }} />
         <p style={{ color: '#6b7280', fontSize: 13, marginTop: 6, textAlign: 'center', fontStyle: 'italic' }}>Sem taxa. Lucro pra você.</p>
       </div>
 
