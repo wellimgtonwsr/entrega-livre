@@ -15,67 +15,92 @@ export default function Splash() {
 
   const ir = (path) => user ? navigate(path) : navigate(`/cadastro?role=CLIENT&next=${encodeURIComponent(path)}`)
 
+  const card = (onClick, iconBg, icon, title, subtitle, arrowColor) => (
+    <button onClick={onClick} style={{
+      background: '#fff', border: '1px solid #e5e7eb',
+      borderRadius: 16, padding: '14px 16px',
+      display: 'flex', alignItems: 'center', gap: 14,
+      cursor: 'pointer', textAlign: 'left', width: '100%',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+    }}>
+      <div style={{
+        width: 48, height: 48, borderRadius: 13,
+        background: iconBg, display: 'flex',
+        alignItems: 'center', justifyContent: 'center',
+        fontSize: 22, flexShrink: 0,
+      }}>{icon}</div>
+      <div>
+        <div style={{ color: '#111827', fontWeight: 700, fontSize: 15, marginBottom: 2 }}>{title}</div>
+        <div style={{ color: '#6b7280', fontSize: 13 }}>{subtitle}</div>
+      </div>
+      <div style={{ marginLeft: 'auto', color: arrowColor, fontSize: 20, fontWeight: 600, paddingLeft: 8 }}>›</div>
+    </button>
+  )
+
+  const secondaryBtn = (onClick, icon, label) => (
+    <button onClick={onClick} style={{
+      background: '#fff', border: '1px solid #e5e7eb',
+      borderRadius: 14, padding: '13px 16px',
+      display: 'flex', alignItems: 'center',
+      cursor: 'pointer', textAlign: 'left', width: '100%',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+    }}>
+      <span style={{ fontSize: 18, marginRight: 10 }}>{icon}</span>
+      <span style={{ color: '#374151', fontWeight: 600, fontSize: 14 }}>{label}</span>
+      <span style={{ marginLeft: 'auto', color: '#9ca3af', fontSize: 18 }}>›</span>
+    </button>
+  )
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: '#fff' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: '#fff', fontFamily: 'system-ui, sans-serif' }}>
 
-      <div style={{ padding: '32px 20px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <img src="/entrega-livre/logo.png" alt="Entrega Livre" style={{ width: '100%', maxWidth: 340, objectFit: 'contain' }} />
-        <p style={{ color: '#555', fontSize: 13, marginTop: 6, textAlign: 'center', fontWeight: 700 }}>Sem taxa. Lucro pra voce.</p>
+      {/* Logo */}
+      <div style={{ padding: '36px 20px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img src="/entrega-livre/logo.png" alt="Entrega Livre" style={{ width: '100%', maxWidth: 220, objectFit: 'contain' }} />
+        <p style={{ color: '#6b7280', fontSize: 13, marginTop: 6, textAlign: 'center', fontStyle: 'italic' }}>Sem taxa. Lucro pra você.</p>
       </div>
 
-      <div style={{ margin: '0 20px 14px', height: 1, background: '#f0f0f0' }} />
-
-      <div style={{ flex: 1, padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-
-        <button onClick={() => ir('/restaurantes')} style={{ background: '#fff8ec', border: '1.5px solid #fde68a', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', textAlign: 'left' }}>
-          <div style={{ width: 46, height: 46, borderRadius: 13, background: 'linear-gradient(135deg,#f59e0b,#d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍔</div>
-          <div>
-            <div style={{ color: '#1a253e', fontWeight: 900, fontSize: 15, marginBottom: 1 }}>Pedir comida</div>
-            <div style={{ color: '#555', fontSize: 12, fontWeight: 600 }}>Restaurantes e lanchonetes perto de voce</div>
-          </div>
-          <div style={{ marginLeft: 'auto', color: '#f59e0b', fontSize: 22, fontWeight: 700 }}>›</div>
-        </button>
-
-        <button onClick={() => ir('/passageiro/nova-viagem')} style={{ background: '#eef0ff', border: '1.5px solid #c7d2fe', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', textAlign: 'left' }}>
-          <div style={{ width: 46, height: 46, borderRadius: 13, background: 'linear-gradient(135deg,#6366f1,#4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏍️</div>
-          <div>
-            <div style={{ color: '#1a253e', fontWeight: 900, fontSize: 15, marginBottom: 1 }}>Passageiro Livre</div>
-            <div style={{ color: '#555', fontSize: 12, fontWeight: 600 }}>Mototaxi — pague o preco justo</div>
-          </div>
-          <div style={{ marginLeft: 'auto', color: '#6366f1', fontSize: 22, fontWeight: 700 }}>›</div>
-        </button>
-
-        <button onClick={() => ir('/cliente/novo-pedido')} style={{ background: '#f3f4f6', border: '1.5px solid #e5e7eb', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', textAlign: 'left' }}>
-          <div style={{ width: 46, height: 46, borderRadius: 13, background: 'linear-gradient(135deg,#374151,#1f2937)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>📦</div>
-          <div>
-            <div style={{ color: '#1a253e', fontWeight: 900, fontSize: 15, marginBottom: 1 }}>Enviar pacote</div>
-            <div style={{ color: '#555', fontSize: 12, fontWeight: 600 }}>Motoboy fica com 100% do combinado</div>
-          </div>
-          <div style={{ marginLeft: 'auto', color: '#9ca3af', fontSize: 22, fontWeight: 700 }}>›</div>
-        </button>
-
-        <button onClick={() => user?.role === 'LOJA' ? navigate('/loja/dashboard') : navigate('/cadastro?role=LOJA')} style={{ background: '#ecfdf5', border: '1.5px solid #a7f3d0', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', textAlign: 'left' }}>
-          <div style={{ width: 46, height: 46, borderRadius: 13, background: 'linear-gradient(135deg,#10b981,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🏪</div>
-          <div>
-            <div style={{ color: '#1a253e', fontWeight: 900, fontSize: 15, marginBottom: 1 }}>Criar minha loja</div>
-            <div style={{ color: '#555', fontSize: 12, fontWeight: 600 }}>Restaurante, lanchonete ou lojista</div>
-          </div>
-          <div style={{ marginLeft: 'auto', color: '#10b981', fontSize: 22, fontWeight: 700 }}>›</div>
-        </button>
-
+      {/* Heading */}
+      <div style={{ padding: '20px 20px 4px', textAlign: 'center' }}>
+        <h1 style={{ color: '#111827', fontSize: 22, fontWeight: 800, margin: '0 0 6px' }}>Como podemos ajudar você hoje?</h1>
+        <p style={{ color: '#6b7280', fontSize: 14, margin: 0 }}>Escolha o serviço que melhor atende às suas necessidades.</p>
       </div>
 
-      <div style={{ padding: '16px 16px 32px', paddingBottom: 'max(32px, calc(16px + env(safe-area-inset-bottom)))', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ height: 1, background: '#f0f0f0', marginBottom: 4 }} />
-        <button style={{ background: '#eef0ff', border: '1.5px solid #c7d2fe', borderRadius: 12, padding: '12px', fontSize: 14, fontWeight: 700, color: '#4f46e5', cursor: 'pointer' }} onClick={() => navigate('/cadastro?role=MOTOTAXI')}>
-          🏍️ Quero ser mototaxi
+      {/* Cards */}
+      <div style={{ flex: 1, padding: '16px 16px 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {card(() => ir('/restaurantes'), '#16a34a', '🍴', 'Pedir comida', 'Restaurantes e lanchonetes perto de você', '#9ca3af')}
+        {card(() => ir('/passageiro/nova-viagem'), '#2563eb', '👤', 'Passageiro Livre', 'Mototáxi — pague o preço justo', '#9ca3af')}
+        {card(() => ir('/cliente/novo-pedido'), '#7c3aed', '📦', 'Enviar pacote', 'Motoboy fica com 100% do combinado', '#9ca3af')}
+        {card(() => user?.role === 'LOJA' ? navigate('/loja/dashboard') : navigate('/cadastro?role=LOJA'), '#16a34a', '🏪', 'Criar minha loja', 'Restaurante, lanchonete ou lojista', '#9ca3af')}
+      </div>
+
+      {/* Secondary actions */}
+      <div style={{ padding: '14px 16px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {secondaryBtn(() => navigate('/cadastro?role=MOTOTAXI'), '🏍️', 'Quero ser mototáxi')}
+        {secondaryBtn(() => navigate('/cadastro?role=MOTOBOY'), '🟢', 'Quero fazer entregas')}
+      </div>
+
+      {/* Login link */}
+      <div style={{ padding: '14px 16px 20px', textAlign: 'center' }}>
+        <button onClick={() => navigate('/login')} style={{ background: 'transparent', border: 'none', color: '#6b7280', fontSize: 13, cursor: 'pointer', padding: 0 }}>
+          Já tenho conta —{' '}
+          <span style={{ color: '#16a34a', fontWeight: 700 }}>Entrar</span>
         </button>
-        <button style={{ background: '#f3f4f6', border: '1.5px solid #e5e7eb', borderRadius: 12, padding: '12px', fontSize: 14, fontWeight: 700, color: '#374151', cursor: 'pointer' }} onClick={() => navigate('/cadastro?role=MOTOBOY')}>
-          🛵 Quero fazer entregas
-        </button>
-        <button onClick={() => navigate('/login')} style={{ background: 'transparent', border: 'none', color: '#aaa', fontSize: 13, fontWeight: 600, padding: '6px', cursor: 'pointer' }}>
-          Ja tenho conta — Entrar
-        </button>
+      </div>
+
+      {/* Footer */}
+      <div style={{ background: '#111827', padding: '20px 16px', paddingBottom: 'max(20px, calc(16px + env(safe-area-inset-bottom)))', display: 'flex', justifyContent: 'space-around', gap: 8 }}>
+        {[
+          { icon: '✅', title: 'Sem taxas abusivas', sub: 'Mais lucro para você' },
+          { icon: '💳', title: 'Pagamento justo', sub: 'Transparência sempre' },
+          { icon: '💬', title: 'Suporte humano', sub: 'Estamos aqui para ajudar' },
+        ].map(({ icon, title, sub }) => (
+          <div key={title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', flex: 1 }}>
+            <span style={{ fontSize: 18, marginBottom: 4 }}>{icon}</span>
+            <span style={{ color: '#f9fafb', fontSize: 11, fontWeight: 700, marginBottom: 2 }}>{title}</span>
+            <span style={{ color: '#9ca3af', fontSize: 10 }}>{sub}</span>
+          </div>
+        ))}
       </div>
 
     </div>
