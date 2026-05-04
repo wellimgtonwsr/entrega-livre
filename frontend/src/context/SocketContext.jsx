@@ -20,6 +20,9 @@ export function SocketProvider({ children }) {
     const socket = io(import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000', {
       auth: { userId: user.id },
       transports: ['websocket'],
+      reconnectionAttempts: 10,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000,
     })
 
     socket.on('connect', () => setConnected(true))

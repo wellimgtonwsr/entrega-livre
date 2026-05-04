@@ -301,3 +301,82 @@ exports.adminAtualizarStatus = async (req, res, next) => {
     return res.json({ success: true, data: pedido });
   } catch (err) { next(err); }
 };
+
+// ─────────────────────────────────────────────
+// LOJA — Owner endpoints
+// ─────────────────────────────────────────────
+
+// GET /api/restaurantes/minha-loja
+exports.minhaLoja = async (req, res, next) => {
+  try {
+    const perfil = await prisma.lojaProfile.findUnique({
+      where: { userId: req.user.id },
+      include: { restaurante: true },
+    });
+    if (!perfil) return res.status(404).json({ success: false, message: 'Perfil de loja não encontrado' });
+    return res.json({ success: true, data: perfil.restaurante || null });
+  } catch (err) { next(err); }
+};
+
+// GET /api/restaurantes/minha-loja/pedidos
+exports.minhaLojaPedidos = async (req, res, next) => {
+  try {
+    const perfil = await prisma.lojaProfile.findUnique({
+      where: { userId: req.user.id },
+      select: { restauranteId: true, restaurante: { select: { id: true, nome: true } } },
+    });
+    if (!perfil || !perfil.restauranteId)
+      return res.json({ success: true, data: [], restaurante: null });
+
+    const { status } = req.query;
+    const where = { restauranteId: perfil.restauranteId };
+    if (status) where.status = status;
+
+    const pedidos = await prisma.pedidoRestaurante.findMany({
+      where,
+      include: {
+        itens: {
+          include: { produto: { select: { nome: true } } },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    return res.json({ success: true, data: pedidos, restaurante: perfil.restaurante });
+  } catch (err) { next(err); }
+};
+
+// PATCH /api/restaurantes/pedidos/:pedidoId/status
+exports.lojaAtualizarStatus = async (req, res, next) => {
+  try {
+    const STATUS_VALIDOS = ['PREPARANDO', 'PRONTO', 'ENTREGANDO', 'ENTREGUE', 'CANCELADO'];
+    const { status } = req.body;
+    if (!STATUS_VALIDOS.includes(status))
+      return res.status(400).json({ success: false, message: 'Status inválido' });
+
+    const perfil = await prisma.lojaProfile.findUnique({
+      where: { userId: req.user.id },
+      select: { restauranteId: true },
+    });
+    if (!perfil?.restauranteId)
+      return res.status(403).json({ success: false, message: 'Loja sem restaurante vinculado' });
+
+    const pedido = await prisma.pedidoRestaurante.findUnique({ where: { id: req.params.pedidoId } });
+    if (!pedido) return res.status(404).json({ success: false, message: 'Pedido não encontrado' });
+    if (pedido.restauranteId !== perfil.restauranteId)
+      return res.status(403).json({ success: false, message: 'Acesso negado' });
+
+    const atualizado = await prisma.pedidoRestaurante.update({
+      where: { id: req.params.pedidoId },
+      data: { status },
+      include: { itens: true },
+    });
+
+    if (req.io) {
+      req.io.to(`pedido_rest:${req.params.pedidoId}`).emit('restaurante:status', { status, pedidoId: req.params.pedidoId });
+      req.io.to(`restaurante:${perfil.restauranteId}`).emit('restaurante:status_atualizado', { pedidoId: req.params.pedidoId, status });
+    }
+
+    return res.json({ success: true, data: atualizado });
+  } catch (err) { next(err); }
+};

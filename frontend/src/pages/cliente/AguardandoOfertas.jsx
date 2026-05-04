@@ -30,7 +30,7 @@ export default function AguardandoOfertas() {
     carregar()
   }, [carregar])
 
-  // Timer
+  // Timer — auto-redireciona quando expira
   useEffect(() => {
     if (!pedido?.expiresAt) return
     const tick = () => {
@@ -38,12 +38,15 @@ export default function AguardandoOfertas() {
       const m = String(Math.floor(diff / 60000)).padStart(2, '0')
       const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0')
       setTimer(`${m}:${s}`)
-      if (diff === 0) carregar()
+      if (diff === 0) {
+        clearInterval(id)
+        setPedido(prev => prev ? { ...prev, status: 'EXPIRED' } : prev)
+      }
     }
+    let id = setInterval(tick, 1000)
     tick()
-    const id = setInterval(tick, 1000)
     return () => clearInterval(id)
-  }, [pedido?.expiresAt, carregar])
+  }, [pedido?.expiresAt])
 
   // Socket: nova proposta
   useEffect(() => {

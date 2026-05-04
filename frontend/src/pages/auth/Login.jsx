@@ -20,6 +20,7 @@ export default function Login() {
       const user = await login(form.email, form.password)
       if (user.role === 'CLIENT') navigate('/splash', { replace: true })
       else if (user.role === 'MOTOBOY') navigate('/motoboy/dashboard', { replace: true })
+      else if (user.role === 'LOJA') navigate('/loja/dashboard', { replace: true })
       else navigate('/admin', { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || 'E-mail ou senha incorretos')

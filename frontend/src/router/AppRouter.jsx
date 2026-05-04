@@ -32,6 +32,9 @@ import HistoricoMotoboy from '../pages/motoboy/Historico'
 import Painel from '../pages/admin/Painel'
 import AdminRestaurantes from '../pages/admin/Restaurantes'
 
+// Loja
+import LojaDashboard from '../pages/loja/Dashboard'
+
 // Cliente — Restaurantes
 import Restaurantes from '../pages/cliente/Restaurantes'
 import Cardapio from '../pages/cliente/Cardapio'
@@ -54,6 +57,7 @@ export default function AppRouter() {
     if (!user) return <Navigate to="/splash" replace />
     if (user.role === 'CLIENT') return <Navigate to="/splash" replace />
     if (user.role === 'MOTOBOY') return <Navigate to="/motoboy/dashboard" replace />
+    if (user.role === 'LOJA') return <Navigate to="/loja/dashboard" replace />
     if (user.role === 'ADMIN') return <Navigate to="/admin" replace />
     return <Navigate to="/splash" replace />
   }
@@ -91,6 +95,9 @@ export default function AppRouter() {
         {/* Admin */}
         <Route path="/admin" element={<PrivateRoute roles={['ADMIN']}><Painel /></PrivateRoute>} />
         <Route path="/admin/restaurantes" element={<PrivateRoute roles={['ADMIN']}><AdminRestaurantes /></PrivateRoute>} />
+
+        {/* Loja */}
+        <Route path="/loja/dashboard" element={<PrivateRoute roles={['LOJA']}><LojaDashboard /></PrivateRoute>} />
 
         {/* Restaurantes (público / cliente) */}
         <Route path="/restaurantes" element={<Restaurantes />} />

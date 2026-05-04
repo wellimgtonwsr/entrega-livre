@@ -403,8 +403,7 @@ exports.atualizarStatusCorrida = async (req, res, next) => {
 };
 
 // GET /api/corridas/disponiveis  (motoboy lista corridas abertas na área)
-exports.corridasDisponiveis = async (req, res, next) => {
-  try {
+exports.corridasDisponiveis = async (req, res, next) => {  try {
     const motoboy = await prisma.motoboy.findUnique({
       where: { userId: req.user.id },
       include: { assinatura: true },
@@ -434,6 +433,76 @@ exports.corridasDisponiveis = async (req, res, next) => {
     }
 
     return res.json({ success: true, data: resultado });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// POST /api/corridas/:id/avaliar  (passageiro ou motoboy avalia após conclusão)
+exports.avaliarCorrida = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ success: false, message: 'Dados inválidos', errors: errors.array() });
+
+    const corrida = await prisma.corrida.findUnique({ where: { id: req.params.id } });
+    if (!corrida)
+      return res.status(404).json({ success: false, message: 'Corrida não encontrada' });
+    if (corrida.status !== 'CONCLUIDA')
+      return res.status(400).json({ success: false, message: 'Corrida não finalizada' });
+
+    // Verificar que o avaliador é parte da corrida
+    const motoboy = req.user.role === 'MOTOBOY'
+      ? await prisma.motoboy.findUnique({ where: { userId: req.user.id } })
+      : null;
+
+    const isPassageiro = corrida.passageiroId === req.user.id;
+    const isMotoboy = motoboy && corrida.motoboyId === motoboy.id;
+    if (!isPassageiro && !isMotoboy)
+      return res.status(403).json({ success: false, message: 'Acesso negado' });
+
+    const { avaliadoId, nota, comentario } = req.body;
+
+    // Validar que o avaliado é a outra parte da corrida
+    const motoboyDaCorrida = await prisma.motoboy.findUnique({
+      where: { id: corrida.motoboyId },
+      select: { userId: true },
+    });
+    const partesDaCorrida = [corrida.passageiroId, motoboyDaCorrida?.userId].filter(Boolean);
+    if (!partesDaCorrida.includes(avaliadoId))
+      return res.status(400).json({ success: false, message: 'Avaliado não participa desta corrida' });
+    if (avaliadoId === req.user.id)
+      return res.status(400).json({ success: false, message: 'Não é possível avaliar a si mesmo' });
+
+    const jaAvaliou = await prisma.avaliacao.findFirst({
+      where: { pedidoId: corrida.id, avaliadorId: req.user.id },
+    });
+    if (jaAvaliou)
+      return res.status(409).json({ success: false, message: 'Você já avaliou esta corrida' });
+
+    const avaliacao = await prisma.avaliacao.create({
+      data: {
+        pedidoId: corrida.id,
+        avaliadorId: req.user.id,
+        avaliadoId,
+        nota: parseInt(nota),
+        comentario,
+      },
+    });
+
+    // Recalcular rating (média das últimas 50 avaliações)
+    const avaliacoes = await prisma.avaliacao.findMany({
+      where: { avaliadoId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: { nota: true },
+    });
+    if (avaliacoes.length > 0) {
+      const media = avaliacoes.reduce((s, a) => s + a.nota, 0) / avaliacoes.length;
+      await prisma.user.update({ where: { id: avaliadoId }, data: { rating: media } });
+    }
+
+    return res.status(201).json({ success: true, data: avaliacao });
   } catch (err) {
     next(err);
   }

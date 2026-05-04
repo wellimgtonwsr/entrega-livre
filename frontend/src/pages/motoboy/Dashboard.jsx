@@ -34,11 +34,17 @@ export default function Dashboard() {
   }, [socket, user])
 
   useEffect(() => {
-    navigator.geolocation?.watchPosition(({ coords }) => {
-      const pos = { lat: coords.latitude, lng: coords.longitude }
-      setMotoPos(pos)
-      atualizarPosicao(pos.lat, pos.lng)
-    }, null, { enableHighAccuracy: true })
+    if (!navigator.geolocation) return
+    const watchId = navigator.geolocation.watchPosition(
+      ({ coords }) => {
+        const pos = { lat: coords.latitude, lng: coords.longitude }
+        setMotoPos(pos)
+        atualizarPosicao(pos.lat, pos.lng)
+      },
+      (err) => console.warn('[Geolocation]', err.message),
+      { enableHighAccuracy: true, timeout: 15000 },
+    )
+    return () => navigator.geolocation.clearWatch(watchId)
   }, [atualizarPosicao])
 
   const carregarPedidos = useCallback(async () => {

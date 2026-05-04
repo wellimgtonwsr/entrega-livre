@@ -11,8 +11,14 @@ const tabsMotoboy = [
   { to: '/motoboy/assinatura',  icon: '💳', label: 'Plano' },
 ]
 
+const tabsLoja = [
+  { to: '/loja/dashboard', icon: '🔔', label: 'Pedidos' },
+]
+
 export default function BottomNav({ role }) {
-  const tabs = role === 'MOTOBOY' ? tabsMotoboy : tabsCliente
+  const tabs = role === 'MOTOBOY' ? tabsMotoboy
+    : role === 'LOJA' ? tabsLoja
+    : tabsCliente
 
   return (
     <nav style={{

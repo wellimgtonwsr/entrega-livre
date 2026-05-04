@@ -21,6 +21,7 @@ model User {
   createdAt   DateTime @default(now())
 
   motoboy             Motoboy?
+  lojaProfile         LojaProfile?
   pedidosCliente      Pedido[]              @relation("ClientePedidos")
   avaliacoesFeitas    Avaliacao[]           @relation("AvaliacoesFeitas")
   avaliacoesRecebidas Avaliacao[]           @relation("AvaliacoesRecebidas")
@@ -33,6 +34,12 @@ enum Role {
   CLIENT
   MOTOBOY
   ADMIN
+  LOJA
+}
+
+enum TipoLoja {
+  PF
+  PJ
 }
 
 model Motoboy {
@@ -234,9 +241,22 @@ model Restaurante {
   ativa     Boolean  @default(true)
   createdAt DateTime @default(now())
 
+  lojaProfile LojaProfile?
   categorias CategoriaCardapio[]
   produtos   ProdutoCardapio[]
   pedidos    PedidoRestaurante[]
+}
+
+model LojaProfile {
+  id            String     @id @default(uuid())
+  userId        String     @unique
+  user          User       @relation(fields: [userId], references: [id])
+  tipo          TipoLoja   @default(PF)
+  documento     String     // CPF (PF) ou CNPJ (PJ)
+  nomeFantasia  String?
+  restauranteId String?    @unique
+  restaurante   Restaurante? @relation(fields: [restauranteId], references: [id])
+  createdAt     DateTime   @default(now())
 }
 
 model CategoriaCardapio {

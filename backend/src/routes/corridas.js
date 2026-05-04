@@ -76,4 +76,16 @@ router.patch(
   ctrl.atualizarStatusCorrida,
 );
 
+// POST /api/corridas/:id/avaliar — passageiro ou motoboy avalia após conclusão
+router.post(
+  '/corridas/:id/avaliar',
+  auth,
+  [
+    body('avaliadoId').notEmpty().withMessage('avaliadoId obrigatório'),
+    body('nota').isInt({ min: 1, max: 5 }).withMessage('nota deve ser entre 1 e 5'),
+    body('comentario').optional().isString().trim().isLength({ max: 500 }),
+  ],
+  ctrl.avaliarCorrida,
+);
+
 module.exports = router;

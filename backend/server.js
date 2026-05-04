@@ -15,6 +15,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const { apiLimiter, strictLimiter, userLimiter } = require('./src/middlewares/rateLimits');
 const cron = require('node-cron');
 const { PrismaClient } = require('@prisma/client');
 
@@ -60,14 +61,8 @@ app.use(cors({
 app.use(express.json());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Muitas requisições. Tente novamente em 1 minuto.' },
-});
-app.use(limiter);
+// Rate limit global — 100 req/min por IP (fallback para rotas não cobertas)
+app.use(apiLimiter);
 
 // Injetar io nos requests
 app.use((req, _res, next) => {
@@ -78,15 +73,22 @@ app.use((req, _res, next) => {
 // Rotas
 app.use('/api/auth', authRoutes);
 app.use('/api', pedidoRoutes);
-app.use('/api', propostaRoutes);
+app.use('/api', strictLimiter, propostaRoutes);   // propostas: 30/min
 app.use('/api', assinaturaRoutes);
-app.use('/api', corridaRoutes);
+app.use('/api', strictLimiter, corridaRoutes);    // corridas: 30/min
 app.use('/api/admin', adminRoutes);
 app.use('/api', restauranteRoutes);
 
 // Health check
 app.get('/health', (_req, res) => res.json({ success: true, message: 'OK' }));
-app.get('/api/health', (_req, res) => res.json({ success: true, message: 'OK' }));
+app.get('/api/health', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ success: true, message: 'OK', db: 'connected' });
+  } catch {
+    res.status(503).json({ success: false, message: 'DB unavailable', db: 'disconnected' });
+  }
+});
 
 // 404
 app.use((_req, res) => {

@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+const argon2 = require('@node-rs/argon2');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const { PrismaClient } = require('@prisma/client');
@@ -9,6 +9,35 @@ const prisma = new PrismaClient();
 const supabase = process.env.SUPABASE_URL
   ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
   : null;
+
+// Argon2id — parâmetros OWASP recomendados para autenticação interativa
+const ARGON2_OPTIONS = {
+  algorithm: 2, // argon2id
+  memoryCost: 65536, // 64 MB
+  timeCost: 3,
+  parallelism: 2,
+};
+
+/**
+ * Hash com Argon2id. Usado em cadastros novos e na migração transparente.
+ */
+const hashPassword = (plain) => argon2.hash(plain, ARGON2_OPTIONS);
+
+/**
+ * Verifica senha. Suporta migração transparente: se o hash for bcrypt ($2b/$2a)
+ * faz fallback com bcrypt puro, retorna match + flag needsRehash para
+ * re-hashar com Argon2id na próxima oportunidade.
+ */
+const verifyPassword = async (plain, hash) => {
+  if (hash.startsWith('$2b$') || hash.startsWith('$2a$') || hash.startsWith('$2y$')) {
+    // Hash legado — bcrypt. Usar verificação manual via timingSafeEqual.
+    const bcrypt = require('bcryptjs');
+    const match = await bcrypt.compare(plain, hash);
+    return { match, needsRehash: match }; // se bateu, migra
+  }
+  const match = await argon2.verify(hash, plain);
+  return { match, needsRehash: false };
+};
 
 const generateToken = (user) =>
   jwt.sign(
@@ -35,8 +64,9 @@ exports.register = async (req, res, next) => {
     if (existing)
       return res.status(409).json({ success: false, message: 'E-mail já cadastrado' });
 
-    const hashed = await bcrypt.hash(password, 10);
-    const userRole = role === 'MOTOBOY' ? 'MOTOBOY' : 'CLIENT';
+    const hashed = await hashPassword(password);
+    const allowedRoles = ['CLIENT', 'MOTOBOY', 'LOJA'];
+    const userRole = allowedRoles.includes(role) ? role : 'CLIENT';
 
     const user = await prisma.user.create({
       data: { name, email, password: hashed, phone, role: userRole },
@@ -49,6 +79,21 @@ exports.register = async (req, res, next) => {
           cnh: cnh || '',
           vehicle: vehicle || '',
           plate: plate || '',
+        },
+      });
+    }
+
+    if (userRole === 'LOJA') {
+      const { tipo, documento, nomeFantasia } = req.body;
+      if (!documento)
+        return res.status(400).json({ success: false, message: 'CPF/CNPJ obrigatório para loja' });
+
+      await prisma.lojaProfile.create({
+        data: {
+          userId: user.id,
+          tipo: tipo === 'PJ' ? 'PJ' : 'PF',
+          documento,
+          nomeFantasia: nomeFantasia || name,
         },
       });
     }
@@ -71,11 +116,22 @@ exports.login = async (req, res, next) => {
 
     const user = await prisma.user.findUnique({
       where: { email },
-      include: { motoboy: { include: { assinatura: true } } },
+      include: {
+        motoboy: { include: { assinatura: true } },
+        lojaProfile: true,
+      },
     });
 
-    if (!user || !(await bcrypt.compare(password, user.password)))
-      return res.status(401).json({ success: false, message: 'Credenciais inválidas' });
+    if (!user) return res.status(401).json({ success: false, message: 'Credenciais inválidas' });
+
+    const { match, needsRehash } = await verifyPassword(password, user.password);
+    if (!match) return res.status(401).json({ success: false, message: 'Credenciais inválidas' });
+
+    // Migração transparente: usuário ainda tem hash bcrypt → re-hashar com Argon2id
+    if (needsRehash) {
+      const newHash = await hashPassword(password);
+      await prisma.user.update({ where: { id: user.id }, data: { password: newHash } });
+    }
 
     const token = generateToken(user);
     return res.json({ success: true, data: { token, user: safeUser(user) } });
@@ -89,7 +145,10 @@ exports.me = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      include: { motoboy: { include: { assinatura: { include: { plano: true } } } } },
+      include: {
+        motoboy: { include: { assinatura: { include: { plano: true } } } },
+        lojaProfile: { include: { restaurante: true } },
+      },
     });
     if (!user) return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
     return res.json({ success: true, data: safeUser(user) });

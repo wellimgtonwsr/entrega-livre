@@ -67,8 +67,20 @@ exports.initSocket = (io) => {
     // Chat durante a corrida
     socket.on('chat:enviar', async ({ pedidoId, texto, senderId }) => {
       try {
+        // Verificar que o remetente é o usuário autenticado e participa do pedido
+        if (!userId || userId !== senderId) return;
+        if (!texto || typeof texto !== 'string' || texto.trim().length === 0) return;
+
+        const pedido = await prisma.pedido.findUnique({
+          where: { id: pedidoId },
+          select: { clienteId: true, motoboyId: true, motoboy: { select: { userId: true } } },
+        });
+        if (!pedido) return;
+        const participantes = [pedido.clienteId, pedido.motoboy?.userId].filter(Boolean);
+        if (!participantes.includes(userId)) return;
+
         const mensagem = await prisma.mensagem.create({
-          data: { pedidoId, senderId, texto },
+          data: { pedidoId, senderId, texto: texto.trim().slice(0, 1000) },
           include: { sender: { select: { name: true, avatar: true } } },
         });
         io.to(`pedido:${pedidoId}`).emit('chat:receber', {

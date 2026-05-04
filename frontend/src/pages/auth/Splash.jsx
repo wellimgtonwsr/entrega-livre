@@ -71,7 +71,7 @@ export default function Splash() {
         {card(() => ir('/restaurantes'), '#16a34a', '🍴', 'Pedir comida', 'Restaurantes e lanchonetes perto de você', '#9ca3af')}
         {card(() => ir('/passageiro/nova-viagem'), '#2563eb', '👤', 'Passageiro Livre', 'Mototáxi — pague o preço justo', '#9ca3af')}
         {card(() => ir('/cliente/novo-pedido'), '#7c3aed', '📦', 'Enviar pacote', 'Motoboy fica com 100% do combinado', '#9ca3af')}
-        {card(() => user?.role === 'LOJA' ? navigate('/loja/dashboard') : navigate('/cadastro?role=LOJA'), '#16a34a', '🏪', 'Criar minha loja', 'Restaurante, lanchonete ou lojista', '#9ca3af')}
+        {card(() => user?.role === 'LOJA' ? navigate('/loja/dashboard') : navigate('/cadastro?role=LOJA'), '#16a34a', '🏪', 'Criar minha loja', 'Restaurante, lanchonete ou lojista — PF ou PJ', '#9ca3af')}
       </div>
 
       {/* Secondary actions */}

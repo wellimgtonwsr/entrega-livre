@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { MercadoPagoConfig, PreApproval } = require('mercadopago');
+const crypto = require('crypto');
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,26 @@ const getMPClient = () => {
     throw new Error('MERCADOPAGO_ACCESS_TOKEN não configurado');
   return new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN });
 };
+
+// Verifica assinatura HMAC do webhook Mercado Pago
+function validarAssinaturaWebhook(req) {
+  const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+  if (!secret) return true; // se não configurado, pula validação (dev)
+
+  const xSignature = req.headers['x-signature'];
+  const xRequestId = req.headers['x-request-id'];
+  if (!xSignature) return false;
+
+  const parts = Object.fromEntries(xSignature.split(',').map(p => p.trim().split('=')));
+  const ts = parts['ts'];
+  const v1 = parts['v1'];
+  if (!ts || !v1) return false;
+
+  const dataId = req.body?.data?.id || '';
+  const manifest = `id:${dataId};request-id:${xRequestId || ''};ts:${ts};`;
+  const expected = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(v1, 'hex'), Buffer.from(expected, 'hex'));
+}
 
 // GET /api/planos
 exports.listarPlanos = async (req, res, next) => {
@@ -86,6 +107,10 @@ exports.criarAssinatura = async (req, res, next) => {
 // POST /api/assinatura/webhook
 exports.webhook = async (req, res, next) => {
   try {
+    if (!validarAssinaturaWebhook(req)) {
+      return res.status(401).json({ success: false, message: 'Assinatura inválida' });
+    }
+
     const { type, data } = req.body;
 
     if (type === 'subscription_preapproval' && data?.id) {

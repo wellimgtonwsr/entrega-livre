@@ -5,6 +5,13 @@ const roles = require('../middlewares/roles');
 
 // ─── Público ──────────────────────────────────────────────────────────────────
 router.get('/restaurantes', ctrl.listar);
+
+// ─── Loja (owner) — deve vir ANTES de /:id para não ser capturado pelo wildcard ──
+router.get('/restaurantes/minha-loja', auth, roles('LOJA'), ctrl.minhaLoja);
+router.get('/restaurantes/minha-loja/pedidos', auth, roles('LOJA'), ctrl.minhaLojaPedidos);
+router.patch('/restaurantes/pedidos/:pedidoId/status', auth, roles('LOJA'), ctrl.lojaAtualizarStatus);
+
+// ─── Detalhe público (após rotas fixas) ───────────────────────────────────────
 router.get('/restaurantes/:id', ctrl.detalhe);
 
 // ─── Cliente autenticado ──────────────────────────────────────────────────────
