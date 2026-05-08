@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
+import { useAuth } from '../../context/AuthContext'
 
 
 
 export default function PainelAdmin() {
   const navigate = useNavigate()
+  const { logout } = useAuth()
   const [metricas, setMetricas] = useState(null)
   const [receita, setReceita] = useState(null)
   const [motoboys, setMotoboys] = useState([])
@@ -41,7 +43,13 @@ export default function PainelAdmin() {
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--dark)', color: '#fff', padding: 20 }}>
-      <div style={{ fontSize: 24, fontWeight: 800, marginBottom: 20 }}>Painel Admin ⚙️</div>
+      {/* Header com logout */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div style={{ fontSize: 24, fontWeight: 800 }}>Painel Admin ⚙️</div>
+        <button onClick={() => { logout(); navigate('/login', { replace: true }) }} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 10, padding: '8px 16px', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+          Sair
+        </button>
+      </div>
 
       {/* Atalhos */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
