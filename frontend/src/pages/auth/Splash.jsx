@@ -10,7 +10,6 @@ export default function Splash() {
     if (!user) return
     if (user.role === 'MOTOBOY') navigate('/motoboy/dashboard', { replace: true })
     else if (user.role === 'LOJA') navigate('/loja/dashboard', { replace: true })
-    else if (user.role === 'ADMIN') navigate('/admin', { replace: true })
   }, [navigate, user])
 
   const ir = (path) => user ? navigate(path) : navigate(`/cadastro?role=CLIENT&next=${encodeURIComponent(path)}`)

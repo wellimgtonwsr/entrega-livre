@@ -46,8 +46,8 @@ export default function PainelAdmin() {
       {/* Header com logout */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div style={{ fontSize: 24, fontWeight: 800 }}>Painel Admin ⚙️</div>
-        <button onClick={() => { logout(); navigate('/login', { replace: true }) }} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 10, padding: '8px 16px', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
-          Sair
+        <button onClick={() => { logout(); navigate('/splash', { replace: true }) }} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 10, padding: '8px 16px', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+          Sair 🚪
         </button>
       </div>
 
