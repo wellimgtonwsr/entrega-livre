@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const tabsCliente = [
   { to: '/cliente/novo-pedido', icon: '➕', label: 'Novo Pedido' },
@@ -19,6 +20,14 @@ export default function BottomNav({ role }) {
   const tabs = role === 'MOTOBOY' ? tabsMotoboy
     : role === 'LOJA' ? tabsLoja
     : tabsCliente
+
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/splash', { replace: true })
+  }
 
   return (
     <nav style={{
@@ -56,6 +65,18 @@ export default function BottomNav({ role }) {
           )}
         </NavLink>
       ))}
+      <button onClick={handleLogout} style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '10px 4px 8px',
+        background: 'none', border: 'none',
+        color: 'var(--text3)', fontWeight: 500, fontSize: 11,
+        gap: 3, cursor: 'pointer',
+        borderTop: '2px solid transparent',
+      }}>
+        <span style={{ fontSize: 22, lineHeight: 1 }}>🚪</span>
+        Sair
+      </button>
     </nav>
   )
 }
