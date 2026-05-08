@@ -91,6 +91,41 @@ async function main() {
     create: { name: 'Fernanda Passageira', email: 'passageiro@teste.com', password: senha, phone: '(11) 96666-0006', role: 'CLIENT' },
   });
 
+  // 7. Restaurantes de teste vinculados às lojas
+  const rest1 = await prisma.restaurante.upsert({
+    where: { id: 'seed-restaurante-diana' },
+    update: {},
+    create: {
+      id: 'seed-restaurante-diana',
+      nome: 'Doceria da Diana',
+      descricao: 'Doces artesanais e sobremesas',
+      categoria: 'Padaria',
+      endereco: 'Rua das Flores, 100',
+      ativa: true,
+    },
+  });
+  await prisma.lojaProfile.update({
+    where: { userId: lojaPF.id },
+    data: { restauranteId: rest1.id },
+  });
+
+  const rest2 = await prisma.restaurante.upsert({
+    where: { id: 'seed-restaurante-eduardo' },
+    update: {},
+    create: {
+      id: 'seed-restaurante-eduardo',
+      nome: 'Burger do Eduardo',
+      descricao: 'Hambúrgueres artesanais',
+      categoria: 'Lanchonete',
+      endereco: 'Av. Principal, 200',
+      ativa: true,
+    },
+  });
+  await prisma.lojaProfile.update({
+    where: { userId: lojaPJ.id },
+    data: { restauranteId: rest2.id },
+  });
+
   console.log('\n✅ Seed concluído! Usuários criados:\n');
   console.table([
     { email: 'cliente@teste.com',    senha: '123456', role: 'CLIENT' },
