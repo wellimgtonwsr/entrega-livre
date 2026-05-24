@@ -1,7 +1,5 @@
 const { validationResult } = require('express-validator');
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 
 // POST /api/pedidos/:id/proposta (motoboy)
 exports.enviarProposta = async (req, res, next) => {

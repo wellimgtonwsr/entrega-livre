@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 
 // ─────────────────────────────────────────────
 // PUBLIC
@@ -347,6 +346,159 @@ exports.minhaLojaPedidos = async (req, res, next) => {
 };
 
 // PATCH /api/restaurantes/pedidos/:pedidoId/status
+// ─────────────────────────────────────────────
+// LOJA — Catálogo (categorias + produtos)
+// ─────────────────────────────────────────────
+
+async function getRestauranteIdLoja(userId) {
+  const perfil = await prisma.lojaProfile.findUnique({
+    where: { userId },
+    select: { restauranteId: true },
+  });
+  return perfil?.restauranteId;
+}
+
+// GET /api/loja/catalogo
+exports.lojaCatalogo = async (req, res, next) => {
+  try {
+    const restauranteId = await getRestauranteIdLoja(req.user.id);
+    if (!restauranteId) return res.status(404).json({ success: false, message: 'Sem restaurante vinculado' });
+    const restaurante = await prisma.restaurante.findUnique({
+      where: { id: restauranteId },
+      include: {
+        categorias: {
+          include: { produtos: { orderBy: { nome: 'asc' } } },
+          orderBy: { nome: 'asc' },
+        },
+      },
+    });
+    return res.json({ success: true, data: restaurante });
+  } catch (err) { next(err); }
+};
+
+// POST /api/loja/categorias
+exports.lojaCriarCategoria = async (req, res, next) => {
+  try {
+    const restauranteId = await getRestauranteIdLoja(req.user.id);
+    if (!restauranteId) return res.status(403).json({ success: false, message: 'Sem restaurante vinculado' });
+    const { nome, icone } = req.body;
+    if (!nome) return res.status(400).json({ success: false, message: 'Nome obrigatório' });
+    const c = await prisma.categoriaCardapio.create({
+      data: { nome, icone: icone || '🍽️', restauranteId },
+    });
+    return res.status(201).json({ success: true, data: c });
+  } catch (err) { next(err); }
+};
+
+// PUT /api/loja/categorias/:catId
+exports.lojaEditarCategoria = async (req, res, next) => {
+  try {
+    const restauranteId = await getRestauranteIdLoja(req.user.id);
+    if (!restauranteId) return res.status(403).json({ success: false, message: 'Sem restaurante vinculado' });
+    const cat = await prisma.categoriaCardapio.findUnique({ where: { id: req.params.catId } });
+    if (!cat || cat.restauranteId !== restauranteId)
+      return res.status(403).json({ success: false, message: 'Acesso negado' });
+    const { nome, icone } = req.body;
+    const updated = await prisma.categoriaCardapio.update({
+      where: { id: req.params.catId },
+      data: { ...(nome && { nome }), ...(icone !== undefined && { icone }) },
+    });
+    return res.json({ success: true, data: updated });
+  } catch (err) { next(err); }
+};
+
+// DELETE /api/loja/categorias/:catId
+exports.lojaDeletarCategoria = async (req, res, next) => {
+  try {
+    const restauranteId = await getRestauranteIdLoja(req.user.id);
+    if (!restauranteId) return res.status(403).json({ success: false, message: 'Sem restaurante vinculado' });
+    const cat = await prisma.categoriaCardapio.findUnique({ where: { id: req.params.catId } });
+    if (!cat || cat.restauranteId !== restauranteId)
+      return res.status(403).json({ success: false, message: 'Acesso negado' });
+    await prisma.categoriaCardapio.delete({ where: { id: req.params.catId } });
+    return res.json({ success: true });
+  } catch (err) { next(err); }
+};
+
+// POST /api/loja/produtos
+exports.lojaCriarProduto = async (req, res, next) => {
+  try {
+    const restauranteId = await getRestauranteIdLoja(req.user.id);
+    if (!restauranteId) return res.status(403).json({ success: false, message: 'Sem restaurante vinculado' });
+    const { nome, preco, descricao, imagem, categoriaId, disponivel } = req.body;
+    if (!nome || preco === undefined || !categoriaId)
+      return res.status(400).json({ success: false, message: 'nome, preco e categoriaId são obrigatórios' });
+    const cat = await prisma.categoriaCardapio.findUnique({ where: { id: categoriaId } });
+    if (!cat || cat.restauranteId !== restauranteId)
+      return res.status(403).json({ success: false, message: 'Categoria inválida' });
+    const p = await prisma.produtoCardapio.create({
+      data: {
+        nome, preco: parseFloat(preco),
+        descricao: descricao || null,
+        imagem: imagem || null,
+        categoriaId,
+        restauranteId,
+        disponivel: disponivel !== undefined ? Boolean(disponivel) : true,
+      },
+    });
+    return res.status(201).json({ success: true, data: p });
+  } catch (err) { next(err); }
+};
+
+// PUT /api/loja/produtos/:prodId
+exports.lojaEditarProduto = async (req, res, next) => {
+  try {
+    const restauranteId = await getRestauranteIdLoja(req.user.id);
+    if (!restauranteId) return res.status(403).json({ success: false, message: 'Sem restaurante vinculado' });
+    const prod = await prisma.produtoCardapio.findUnique({ where: { id: req.params.prodId } });
+    if (!prod || prod.restauranteId !== restauranteId)
+      return res.status(403).json({ success: false, message: 'Acesso negado' });
+    const { nome, preco, descricao, imagem, categoriaId, disponivel } = req.body;
+    const p = await prisma.produtoCardapio.update({
+      where: { id: req.params.prodId },
+      data: {
+        ...(nome !== undefined && { nome }),
+        ...(preco !== undefined && { preco: parseFloat(preco) }),
+        ...(descricao !== undefined && { descricao }),
+        ...(imagem !== undefined && { imagem }),
+        ...(categoriaId !== undefined && { categoriaId }),
+        ...(disponivel !== undefined && { disponivel: Boolean(disponivel) }),
+      },
+    });
+    return res.json({ success: true, data: p });
+  } catch (err) { next(err); }
+};
+
+// DELETE /api/loja/produtos/:prodId
+exports.lojaDeletarProduto = async (req, res, next) => {
+  try {
+    const restauranteId = await getRestauranteIdLoja(req.user.id);
+    if (!restauranteId) return res.status(403).json({ success: false, message: 'Sem restaurante vinculado' });
+    const prod = await prisma.produtoCardapio.findUnique({ where: { id: req.params.prodId } });
+    if (!prod || prod.restauranteId !== restauranteId)
+      return res.status(403).json({ success: false, message: 'Acesso negado' });
+    await prisma.produtoCardapio.delete({ where: { id: req.params.prodId } });
+    return res.json({ success: true });
+  } catch (err) { next(err); }
+};
+
+// PATCH /api/loja/pedidos/:pedidoId/entrega-propria
+exports.lojaSetEntregaPropria = async (req, res, next) => {
+  try {
+    const restauranteId = await getRestauranteIdLoja(req.user.id);
+    if (!restauranteId) return res.status(403).json({ success: false, message: 'Sem restaurante vinculado' });
+    const pedido = await prisma.pedidoRestaurante.findUnique({ where: { id: req.params.pedidoId } });
+    if (!pedido || pedido.restauranteId !== restauranteId)
+      return res.status(403).json({ success: false, message: 'Acesso negado' });
+    const { entregaPropria } = req.body;
+    const atualizado = await prisma.pedidoRestaurante.update({
+      where: { id: req.params.pedidoId },
+      data: { entregaPropria: Boolean(entregaPropria) },
+    });
+    return res.json({ success: true, data: atualizado });
+  } catch (err) { next(err); }
+};
+
 exports.lojaAtualizarStatus = async (req, res, next) => {
   try {
     const STATUS_VALIDOS = ['PREPARANDO', 'PRONTO', 'ENTREGANDO', 'ENTREGUE', 'CANCELADO'];

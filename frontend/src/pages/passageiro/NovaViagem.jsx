@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoogleMap, useJsApiLoader, Autocomplete, DirectionsRenderer } from '@react-google-maps/api'
 import api from '../../services/api'
@@ -22,6 +22,7 @@ export default function NovaViagem() {
   const [sugestaoServidor, setSugestaoServidor] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [gpsStatus, setGpsStatus] = useState('checking') // 'checking' | 'ok' | 'denied' | 'unavailable'
 
   const origemRef = useRef(null)
   const destinoRef = useRef(null)
@@ -77,14 +78,45 @@ export default function NovaViagem() {
     if (origem) calcularRota(origem, loc)
   }
 
-  const usarGPS = () => {
-    navigator.geolocation?.getCurrentPosition(({ coords }) => {
-      const loc = { lat: coords.latitude, lng: coords.longitude, endereco: `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}` }
-      setOrigem(loc)
-      if (origemRef.current) origemRef.current.value = loc.endereco
-      if (destino) calcularRota(loc, destino)
-    })
-  }
+  const usarGPS = useCallback(() => {
+    if (!navigator.geolocation) {
+      setGpsStatus('unavailable')
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const loc = { lat: coords.latitude, lng: coords.longitude, endereco: `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}` }
+        setOrigem(loc)
+        if (origemRef.current) origemRef.current.value = loc.endereco
+        setGpsStatus('ok')
+        setDestino(d => { if (d) calcularRota(loc, d); return d })
+      },
+      () => {
+        setGpsStatus('denied')
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }, [calcularRota])
+
+  // Verificar GPS ao montar — obrigatório para solicitar corrida
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setGpsStatus('unavailable')
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const loc = { lat: coords.latitude, lng: coords.longitude, endereco: `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}` }
+        setOrigem(loc)
+        if (origemRef.current) origemRef.current.value = loc.endereco
+        setGpsStatus('ok')
+      },
+      () => {
+        setGpsStatus('denied')
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }, []) // eslint-disable-line
 
   const solicitar = async () => {
     if (!origem || !destino || !rota || !valor) return
@@ -122,6 +154,37 @@ export default function NovaViagem() {
         <div />
       </div>
 
+      {/* GPS obrigatório — bloqueio quando não autorizado */}
+      {gpsStatus === 'checking' && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center' }}>
+          <div style={{ fontSize: 56, marginBottom: 16 }}>📍</div>
+          <p style={{ color: 'var(--text)', fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Verificando localização...</p>
+          <p style={{ color: 'var(--text2)', fontSize: 14 }}>Aguarde enquanto obtemos sua posição.</p>
+        </div>
+      )}
+      {(gpsStatus === 'denied' || gpsStatus === 'unavailable') && (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 32, textAlign: 'center' }}>
+          <div style={{ fontSize: 64, marginBottom: 16 }}>🚫📍</div>
+          <h2 style={{ color: 'var(--text)', fontWeight: 800, fontSize: 18, margin: '0 0 10px' }}>Localização necessária</h2>
+          <p style={{ color: 'var(--text2)', fontSize: 14, marginBottom: 24 }}>
+            {gpsStatus === 'unavailable'
+              ? 'Seu dispositivo não suporta GPS. Use um aparelho compatível para solicitar corridas.'
+              : 'Você precisa ativar a localização do seu dispositivo para solicitar uma corrida.'}
+          </p>
+          {gpsStatus === 'denied' && (
+            <button
+              onClick={usarGPS}
+              style={{
+                background: 'var(--brand)', color: '#fff', border: 'none', borderRadius: 14,
+                padding: '14px 32px', fontWeight: 700, fontSize: 15, cursor: 'pointer',
+              }}
+            >Tentar novamente</button>
+          )}
+        </div>
+      )}
+
+      {/* Map + form — só exibe quando GPS autorizado */}
+      {gpsStatus === 'ok' && (<>
       {/* Map */}
       <div style={{ flex: 1, position: 'relative' }}>
         {isLoaded ? (
@@ -239,6 +302,8 @@ export default function NovaViagem() {
       </div>
 
       <BottomNav role="CLIENT" active="passageiro" />
+    </>)}
+
     </div>
   )
 }

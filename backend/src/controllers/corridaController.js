@@ -1,8 +1,6 @@
 const { validationResult } = require('express-validator');
-const { PrismaClient } = require('@prisma/client');
 const { calcularRota } = require('../services/mapsService');
-
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 const EXPIRACAO_MIN = 7;
 const RAIO_KM = 5;
 

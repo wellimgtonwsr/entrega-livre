@@ -11,6 +11,16 @@ router.get('/restaurantes/minha-loja', auth, roles('LOJA'), ctrl.minhaLoja);
 router.get('/restaurantes/minha-loja/pedidos', auth, roles('LOJA'), ctrl.minhaLojaPedidos);
 router.patch('/restaurantes/pedidos/:pedidoId/status', auth, roles('LOJA'), ctrl.lojaAtualizarStatus);
 
+// ─── Loja — Catálogo (categorias + produtos) ──────────────────────────────────
+router.get('/loja/catalogo', auth, roles('LOJA'), ctrl.lojaCatalogo);
+router.post('/loja/categorias', auth, roles('LOJA'), ctrl.lojaCriarCategoria);
+router.put('/loja/categorias/:catId', auth, roles('LOJA'), ctrl.lojaEditarCategoria);
+router.delete('/loja/categorias/:catId', auth, roles('LOJA'), ctrl.lojaDeletarCategoria);
+router.post('/loja/produtos', auth, roles('LOJA'), ctrl.lojaCriarProduto);
+router.put('/loja/produtos/:prodId', auth, roles('LOJA'), ctrl.lojaEditarProduto);
+router.delete('/loja/produtos/:prodId', auth, roles('LOJA'), ctrl.lojaDeletarProduto);
+router.patch('/loja/pedidos/:pedidoId/entrega-propria', auth, roles('LOJA'), ctrl.lojaSetEntregaPropria);
+
 // ─── Detalhe público (após rotas fixas) ───────────────────────────────────────
 router.get('/restaurantes/:id', ctrl.detalhe);
 

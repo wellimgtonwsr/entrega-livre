@@ -81,6 +81,7 @@ export default function EmAndamento() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
       {/* Map */}
       <div style={{ flex: 1, position: 'relative' }}>
+        <button onClick={() => navigate(-1)} style={{ position: 'absolute', top: 'max(16px, env(safe-area-inset-top))', left: 16, zIndex: 10, background: '#fff', border: 'none', borderRadius: 10, width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>←</button>
         {isLoaded && (
           <GoogleMap
             mapContainerStyle={{ width: '100%', height: '100%' }}

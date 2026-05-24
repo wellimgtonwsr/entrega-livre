@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const { body } = require('express-validator');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 const ctrl = require('../controllers/pedidoController');
 const auth = require('../middlewares/auth');
 const roles = require('../middlewares/roles');
@@ -10,20 +9,22 @@ const roles = require('../middlewares/roles');
 router.put('/motoboy/localizacao', auth, roles('MOTOBOY'), async (req, res, next) => {
   try {
     const { lat, lng } = req.body;
-    if (!lat || !lng)
-      return res.status(400).json({ success: false, message: 'lat e lng obrigatórios' });
+    const latN = parseFloat(lat);
+    const lngN = parseFloat(lng);
+    if (!lat || !lng || isNaN(latN) || isNaN(lngN) || latN < -90 || latN > 90 || lngN < -180 || lngN > 180)
+      return res.status(400).json({ success: false, message: 'Coordenadas inválidas' });
 
     const motoboy = await prisma.motoboy.findUnique({ where: { userId: req.user.id } });
     if (!motoboy) return res.status(404).json({ success: false, message: 'Motoboy não encontrado' });
 
     await prisma.motoboy.update({
       where: { id: motoboy.id },
-      data: { lat: parseFloat(lat), lng: parseFloat(lng), locationAt: new Date() },
+      data: { lat: latN, lng: lngN, locationAt: new Date() },
     });
 
     // Emitir localização para quem esteja acompanhando
     req.io.to(`motoboy:${motoboy.id}`).emit('motoboy:location', {
-      motoboyId: motoboy.id, lat: parseFloat(lat), lng: parseFloat(lng),
+      motoboyId: motoboy.id, lat: latN, lng: lngN,
     });
 
     return res.json({ success: true });

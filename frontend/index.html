@@ -4,8 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f59e0b" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Entrega Livre" />
     <title>Entrega Livre</title>
     <link rel="icon" type="image/svg+xml" href="/entrega-livre/favicon.svg" />
+    <link rel="manifest" href="/entrega-livre/manifest.json" />
+    <link rel="apple-touch-icon" href="/entrega-livre/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -201,6 +207,32 @@
       }
       .info-badge-val { font-size: 17px; font-weight: 800; color: var(--text); }
       .info-badge-lbl { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+      /* ── Responsivo: tablet / desktop ────────────────────────── */
+      @media (min-width: 768px) {
+        body {
+          background: var(--dark);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100dvh;
+        }
+        #root {
+          width: 420px;
+          max-width: 420px;
+          height: 100dvh;
+          max-height: 860px;
+          border-radius: 24px;
+          overflow: hidden;
+          box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+          position: relative;
+        }
+      }
+      @media (min-width: 1024px) {
+        #root {
+          max-height: 900px;
+        }
+      }
     </style>
   </head>
   <body>

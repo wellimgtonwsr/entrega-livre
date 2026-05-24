@@ -17,7 +17,7 @@ const STATUS_LABEL = {
 const NEXT_STATUS = {
   PENDENTE: 'PREPARANDO',
   PREPARANDO: 'PRONTO',
-  PRONTO: 'ENTREGANDO',
+  ENTREGANDO: 'ENTREGUE',
 }
 
 export default function LojaDashboard() {
@@ -75,6 +75,13 @@ export default function LojaDashboard() {
     } catch (err) {
       alert(err.response?.data?.message || 'Erro ao atualizar status')
     }
+  }
+
+  const setEntregaPropria = async (pedidoId, valor) => {
+    try {
+      await api.patch(`/loja/pedidos/${pedidoId}/entrega-propria`, { entregaPropria: valor })
+      setPedidos(prev => prev.map(p => p.id === pedidoId ? { ...p, entregaPropria: valor } : p))
+    } catch {}
   }
 
   const pendentes = pedidos.filter(p => ['PENDENTE', 'PREPARANDO', 'PRONTO', 'ENTREGANDO'].includes(p.status))
@@ -163,7 +170,7 @@ export default function LojaDashboard() {
                     <p className="sect-title" style={{ marginBottom: 10 }}>
                       Pedidos ativos ({pendentes.length})
                     </p>
-                    {pendentes.map(p => <PedidoCard key={p.id} pedido={p} onAvancar={avancarStatus} />)}
+                    {pendentes.map(p => <PedidoCard key={p.id} pedido={p} onAvancar={avancarStatus} onSetEntregaPropria={setEntregaPropria} />)}
                   </>
                 )}
 
@@ -186,7 +193,7 @@ export default function LojaDashboard() {
   )
 }
 
-function PedidoCard({ pedido, onAvancar }) {
+function PedidoCard({ pedido, onAvancar, onSetEntregaPropria }) {
   const st = STATUS_LABEL[pedido.status] || STATUS_LABEL.PENDENTE
   const prox = NEXT_STATUS[pedido.status]
   const proxLabel = prox ? STATUS_LABEL[prox]?.label : null
@@ -222,11 +229,41 @@ function PedidoCard({ pedido, onAvancar }) {
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, flexWrap: 'wrap', gap: 8 }}>
         <div style={{ fontWeight: 800, color: 'var(--brand)', fontSize: 16 }}>
           R$ {pedido.total?.toFixed(2) || '0,00'}
         </div>
-        {proxLabel && onAvancar && (
+
+        {/* Pedido PRONTO: escolha do tipo de entrega */}
+        {pedido.status === 'PRONTO' && onAvancar && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <button
+              onClick={async () => {
+                if (onSetEntregaPropria) await onSetEntregaPropria(pedido.id, true)
+                onAvancar(pedido.id, 'ENTREGANDO')
+              }}
+              style={{
+                background: 'linear-gradient(135deg,#16a34a,#15803d)',
+                border: 'none', borderRadius: 10, padding: '8px 12px',
+                color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer',
+              }}
+            >🚗 Entrega própria</button>
+            <button
+              onClick={async () => {
+                if (onSetEntregaPropria) await onSetEntregaPropria(pedido.id, false)
+                onAvancar(pedido.id, 'ENTREGANDO')
+              }}
+              style={{
+                background: 'linear-gradient(135deg,#f97316,#ea580c)',
+                border: 'none', borderRadius: 10, padding: '8px 12px',
+                color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer',
+              }}
+            >🛵 Motoboy do app</button>
+          </div>
+        )}
+
+        {/* Outros status com próximo passo */}
+        {pedido.status !== 'PRONTO' && proxLabel && onAvancar && (
           <button
             onClick={() => onAvancar(pedido.id, prox)}
             style={{

@@ -14,6 +14,7 @@ const tabsMotoboy = [
 
 const tabsLoja = [
   { to: '/loja/dashboard', icon: '🔔', label: 'Pedidos' },
+  { to: '/loja/catalogo', icon: '📦', label: 'Catálogo' },
 ]
 
 export default function BottomNav({ role }) {

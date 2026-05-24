@@ -1,10 +1,8 @@
 const argon2 = require('@node-rs/argon2');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
-const { PrismaClient } = require('@prisma/client');
 const { createClient } = require('@supabase/supabase-js');
-
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 
 const supabase = process.env.SUPABASE_URL
   ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
@@ -169,8 +167,13 @@ exports.uploadDocs = async (req, res, next) => {
     if (!cnhBase64 || !fileName)
       return res.status(400).json({ success: false, message: 'Arquivo obrigatório' });
 
+    // Sanitizar fileName: manter só caracteres seguros e limitar tamanho
+    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100);
+    if (!safeName)
+      return res.status(400).json({ success: false, message: 'Nome de arquivo inválido' });
+
     const buffer = Buffer.from(cnhBase64, 'base64');
-    const path = `cnh/${motoboy.id}/${fileName}`;
+    const path = `cnh/${motoboy.id}/${safeName}`;
 
     const { error } = await supabase.storage
       .from('documentos')

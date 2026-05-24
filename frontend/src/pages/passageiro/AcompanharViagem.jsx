@@ -92,6 +92,8 @@ export default function AcompanharViagem() {
           </div>
         )}
 
+        {/* Back button over map */}
+        <button onClick={() => navigate(-1)} style={{ position: 'absolute', top: 'max(16px, calc(16px + env(safe-area-inset-top)))', left: 16, zIndex: 10, background: '#fff', border: 'none', borderRadius: 10, width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>←</button>
         {/* Status pill over map */}
         <div style={{
           position: 'absolute', top: 'max(16px, calc(16px + env(safe-area-inset-top)))', left: '50%', transform: 'translateX(-50%)',

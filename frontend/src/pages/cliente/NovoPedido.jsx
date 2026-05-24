@@ -122,6 +122,7 @@ export default function NovoPedido() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--bg)' }}>
       {/* Header */}
       <div className="page-header">
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#fff', padding: '4px 8px', marginRight: 4 }}>←</button>
         <div>
           <div className="page-header-title">📦 Nova entrega</div>
           <div className="page-header-sub">Proponha o valor, o motoboy decide</div>

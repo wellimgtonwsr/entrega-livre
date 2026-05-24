@@ -39,7 +39,8 @@ export default function AvaliarCliente() {
   const motoboyNome = pedido.motoboy?.user?.name || 'Motoboy'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', background: 'var(--bg)', padding: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh', background: 'var(--bg)', padding: 24, position: 'relative' }}>
+      <button onClick={() => navigate(-1)} style={{ position: 'absolute', top: 'max(16px, env(safe-area-inset-top))', left: 16, background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, color: 'var(--text)', padding: 4 }}>←</button>
       <div className="card anim-up" style={{ width: '100%', maxWidth: 400, textAlign: 'center', padding: 32 }}>
         <div style={{ fontSize: 52, marginBottom: 8 }}>🌟</div>
         <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', marginBottom: 6 }}>Como foi a entrega?</h1>

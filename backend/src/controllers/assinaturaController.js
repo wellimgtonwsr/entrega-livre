@@ -1,8 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
 const { MercadoPagoConfig, PreApproval } = require('mercadopago');
 const crypto = require('crypto');
-
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 
 const getMPClient = () => {
   if (!process.env.MERCADOPAGO_ACCESS_TOKEN)

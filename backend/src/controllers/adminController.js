@@ -1,7 +1,5 @@
 const { validationResult } = require('express-validator');
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 
 const paginar = (page, limit) => {
   const p = Math.max(1, parseInt(page) || 1);

@@ -13,11 +13,12 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { apiLimiter, strictLimiter, userLimiter } = require('./src/middlewares/rateLimits');
 const cron = require('node-cron');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('./src/lib/prisma');
 
 const authRoutes = require('./src/routes/auth');
 const pedidoRoutes = require('./src/routes/pedidos');
@@ -30,7 +31,6 @@ const { initSocket } = require('./src/services/socketService');
 
 const app = express();
 const server = http.createServer(app);
-const prisma = new PrismaClient();
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
@@ -57,6 +57,9 @@ app.use(cors({
   },
   credentials: true,
 }));
+
+// Compressão gzip — reduz ~70% do tamanho das respostas para conexões lentas
+app.use(compression());
 
 app.use(express.json());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));

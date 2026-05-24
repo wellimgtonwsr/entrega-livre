@@ -66,7 +66,8 @@ export default function Acompanhar() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
       {/* Status bar */}
-      <div style={{ background: 'var(--dark)', padding: '10px 16px', color: '#fff', fontSize: 14, fontWeight: 600, zIndex: 1 }}>
+      <div style={{ background: 'var(--dark)', padding: '10px 16px', color: '#fff', fontSize: 14, fontWeight: 600, zIndex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#fff', padding: 0, lineHeight: 1, flexShrink: 0 }}>←</button>
         {STATUS_LABELS[status] || status}
       </div>
 

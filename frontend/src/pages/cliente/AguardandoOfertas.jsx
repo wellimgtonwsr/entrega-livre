@@ -101,7 +101,10 @@ export default function AguardandoOfertas() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--bg)' }}>
       {/* Header */}
       <div className="page-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 10 }}>
-        <div className="page-header-title">Aguardando motoboys 🛵</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#fff', padding: '4px 8px' }}>←</button>
+          <div className="page-header-title">Aguardando motoboys 🛵</div>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>Expira em:</span>
           <span className="badge" style={{ background: 'rgba(245,158,11,0.2)', color: 'var(--brand)', fontWeight: 700 }}>⏱ {timer || '--:--'}</span>

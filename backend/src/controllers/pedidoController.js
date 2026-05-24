@@ -1,10 +1,8 @@
 const { validationResult } = require('express-validator');
-const { PrismaClient } = require('@prisma/client');
 const { calcularDistancia } = require('../utils/calcularDistancia');
 const { calcularRota } = require('../services/mapsService');
 const { calcularValor } = require('../services/precificacao.service');
-
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 const RAIO_KM = 5;
 const EXPIRACAO_MIN = 5;
 
@@ -156,8 +154,17 @@ exports.pedidosDisponiveis = async (req, res, next) => {
     if (!motoboy.locationAt || motoboy.locationAt < doisMin)
       return res.status(400).json({ success: false, message: 'Atualize sua localização' });
 
+    // Bounding box: pre-filtra no banco antes do Haversine exato
+    const latDelta = RAIO_KM / 111;
+    const lngDelta = RAIO_KM / (111 * Math.cos((motoboy.lat * Math.PI) / 180));
+
     const pedidos = await prisma.pedido.findMany({
-      where: { status: 'WAITING_OFFERS', expiresAt: { gt: new Date() } },
+      where: {
+        status: 'WAITING_OFFERS',
+        expiresAt: { gt: new Date() },
+        origemLat: { gte: motoboy.lat - latDelta, lte: motoboy.lat + latDelta },
+        origemLng: { gte: motoboy.lng - lngDelta, lte: motoboy.lng + lngDelta },
+      },
       include: { cliente: { select: { id: true, name: true, rating: true, avatar: true } } },
     });
 
@@ -204,9 +211,18 @@ exports.detalhesPedido = async (req, res, next) => {
     if (!pedido) return res.status(404).json({ success: false, message: 'Pedido não encontrado' });
 
     // Verificar permissão
-    const isMotoboy = req.user.role === 'MOTOBOY';
-    if (!isMotoboy && pedido.clienteId !== req.user.id && req.user.role !== 'ADMIN')
+    if (req.user.role === 'MOTOBOY') {
+      // Motoboy só acessa se for o atribuído ao pedido ou tiver proposta ativa nele
+      const motoboy = await prisma.motoboy.findUnique({ where: { userId: req.user.id } });
+      const temAcesso =
+        motoboy &&
+        (pedido.motoboyId === motoboy.id ||
+          pedido.propostas.some((p) => p.motoboyId === motoboy.id));
+      if (!temAcesso)
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    } else if (req.user.role !== 'ADMIN' && pedido.clienteId !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Acesso negado' });
+    }
 
     return res.json({ success: true, data: pedido });
   } catch (err) {

@@ -296,6 +296,7 @@ model PedidoRestaurante {
   restaurante   Restaurante             @relation(fields: [restauranteId], references: [id])
   clienteId     String?
   cliente       User?                   @relation("PedidosRestauranteCliente", fields: [clienteId], references: [id])
+  entregaPropria Boolean               @default(true)
   createdAt     DateTime                @default(now())
 
   itens ItemPedidoRestaurante[]
@@ -315,6 +316,8 @@ enum StatusPedidoRestaurante {
   PENDENTE
   PREPARANDO
   PRONTO
+  ENTREGANDO
+  ENTREGUE
   CANCELADO
   CONCLUIDO
 }

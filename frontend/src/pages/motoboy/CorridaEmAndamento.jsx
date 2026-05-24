@@ -84,6 +84,7 @@ export default function CorridaEmAndamento() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--bg)' }}>
       {/* Header */}
       <div className="page-header" style={{ background: 'linear-gradient(135deg,#6366f1,#4f46e5)' }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: 18, flexShrink: 0 }}>←</button>
         <div>
           <div className="page-header-title" style={{ color: '#fff' }}>🏍️ Corrida em andamento</div>
           <div className="page-header-sub" style={{ color: 'rgba(255,255,255,0.75)' }}>

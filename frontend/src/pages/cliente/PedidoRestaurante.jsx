@@ -60,7 +60,8 @@ export default function PedidoRestaurante() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: 'var(--bg)' }}>
 
       {/* Header */}
-      <div style={{ background: `linear-gradient(135deg, ${info.color}, ${info.color}cc)`, padding: '52px 20px 28px', paddingTop: 'max(52px, calc(20px + env(safe-area-inset-top)))', textAlign: 'center' }}>
+      <div style={{ background: `linear-gradient(135deg, ${info.color}, ${info.color}cc)`, padding: '52px 20px 28px', paddingTop: 'max(52px, calc(20px + env(safe-area-inset-top)))', textAlign: 'center', position: 'relative' }}>
+        <button onClick={() => navigate('/restaurantes')} style={{ position: 'absolute', top: 'max(16px, env(safe-area-inset-top))', left: 16, background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 10, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: 18 }}>←</button>
         <div style={{ fontSize: 64, marginBottom: 12 }}>{info.icon}</div>
         <div style={{ color: '#fff', fontWeight: 900, fontSize: 22 }}>{info.label}</div>
         <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, marginTop: 4 }}>{info.desc}</div>
