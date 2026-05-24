@@ -103,21 +103,22 @@ export default function Dashboard() {
       setCorridas(prev => prev.filter(c => c.id !== corridaId))
     }
     socket.on('corrida:nova', corridaHandler)
-    socket.on('corrida_status', ({ corridaId, status }) => {
+    const corridaStatusHandler = ({ corridaId, status }) => {
       if (status === 'ACEITA') {
         // Minha proposta foi aceita — navegar para corrida em andamento
         navigate(`/motoboy/corrida-em-andamento/${corridaId}`)
       }
       if (['CANCELADA', 'EXPIRADA'].includes(status))
         setCorridas(prev => prev.filter(c => c.id !== corridaId))
-    })
+    }
+    socket.on('corrida_status', corridaStatusHandler)
 
     return () => {
       socket.off('pedido:novo', handler)
       socket.off('pedido:expirado', encerrarHandler)
       socket.off('pedido:cancelado', encerrarHandler)
       socket.off('corrida:nova', corridaHandler)
-      socket.off('corrida_status')
+      socket.off('corrida_status', corridaStatusHandler)
     }
   }, [socket, user?.id, motoPos])
 

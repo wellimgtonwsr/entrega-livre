@@ -50,13 +50,14 @@ export default function CorridaEmAndamento() {
   useEffect(() => {
     if (!socket) return
     socket.emit('entrar_corrida', corridaId)
-    socket.on('corrida_status', ({ status: s }) => {
+    const corridaStatusHandler = ({ status: s }) => {
       if (s === 'CANCELADA') {
         alert('Corrida cancelada pelo passageiro.')
         navigate('/motoboy/dashboard')
       }
-    })
-    return () => socket.off('corrida_status')
+    }
+    socket.on('corrida_status', corridaStatusHandler)
+    return () => socket.off('corrida_status', corridaStatusHandler)
   }, [socket, corridaId, navigate])
 
   const atualizarStatus = async (novoStatus) => {

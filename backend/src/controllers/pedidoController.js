@@ -212,11 +212,12 @@ exports.detalhesPedido = async (req, res, next) => {
 
     // Verificar permissão
     if (req.user.role === 'MOTOBOY') {
-      // Motoboy só acessa se for o atribuído ao pedido ou tiver proposta ativa nele
       const motoboy = await prisma.motoboy.findUnique({ where: { userId: req.user.id } });
+      // Pode ver se: pedido está aberto a propostas, OU é o motoboy atribuído, OU tem proposta no pedido
       const temAcesso =
         motoboy &&
-        (pedido.motoboyId === motoboy.id ||
+        (pedido.status === 'WAITING_OFFERS' ||
+          pedido.motoboyId === motoboy.id ||
           pedido.propostas.some((p) => p.motoboyId === motoboy.id));
       if (!temAcesso)
         return res.status(403).json({ success: false, message: 'Acesso negado' });

@@ -40,14 +40,16 @@ export default function AcompanharViagem() {
   useEffect(() => {
     if (!socket) return
     socket.emit('entrar_corrida', corridaId)
-    socket.on('motoboy_location', ({ lat, lng }) => setMotoboyPos({ lat, lng }))
-    socket.on('corrida_status', ({ status }) => {
+    const locHandler = ({ lat, lng }) => setMotoboyPos({ lat, lng })
+    const statusHandler = ({ status }) => {
       if (status === 'CONCLUIDA') navigate('/splash')
       if (status === 'CANCELADA') navigate('/passageiro/nova-viagem')
-    })
+    }
+    socket.on('motoboy_location', locHandler)
+    socket.on('corrida_status', statusHandler)
     return () => {
-      socket.off('motoboy_location')
-      socket.off('corrida_status')
+      socket.off('motoboy_location', locHandler)
+      socket.off('corrida_status', statusHandler)
     }
   }, [socket, corridaId, navigate])
 

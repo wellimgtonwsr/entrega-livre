@@ -149,12 +149,20 @@ exports.obterCorrida = async (req, res, next) => {
     if (!corrida)
       return res.status(404).json({ success: false, message: 'Corrida não encontrada' });
 
-    // Apenas passageiro ou motoboy da corrida podem ver
+    // Verificar permissão
     const isPassageiro = corrida.passageiroId === req.user.id;
-    const isMotoboy = corrida.motoboy?.user
-      ? await prisma.motoboy.findUnique({ where: { userId: req.user.id } }).then(mb => mb?.id === corrida.motoboyId)
-      : false;
     const isAdmin = req.user.role === 'ADMIN';
+    let isMotoboy = false;
+
+    if (req.user.role === 'MOTOBOY') {
+      const mb = await prisma.motoboy.findUnique({ where: { userId: req.user.id } });
+      // Pode ver se: corrida está aberta (AGUARDANDO), OU é o motoboy atribuído, OU tem proposta
+      isMotoboy =
+        mb &&
+        (corrida.status === 'AGUARDANDO' ||
+          corrida.motoboyId === mb.id ||
+          corrida.propostas.some((p) => p.motoboyId === mb.id));
+    }
 
     if (!isPassageiro && !isMotoboy && !isAdmin)
       return res.status(403).json({ success: false, message: 'Acesso negado' });

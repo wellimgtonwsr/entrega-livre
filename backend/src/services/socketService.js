@@ -1,5 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 
 // Mapa: userId → socketId
 const onlineMotoboys = new Map();
@@ -113,9 +112,26 @@ exports.initSocket = (io) => {
     });
 
     // Motoboy ou loja enviam mensagem
-    socket.on('loja:chat:enviar', ({ pedidoId, texto, senderId }) => {
-      const msg = { pedidoId, senderId, texto, id: Date.now(), createdAt: new Date() };
-      io.to(`pedido_loja:${pedidoId}`).emit('loja:chat:receber', msg);
+    socket.on('loja:chat:enviar', async ({ pedidoId, texto, senderId }) => {
+      if (!userId || userId !== senderId) return;
+      if (!texto || typeof texto !== 'string' || texto.trim().length === 0) return;
+
+      try {
+        const pedido = await prisma.pedido.findUnique({
+          where: { id: pedidoId },
+          select: { clienteId: true, motoboy: { select: { userId: true } }, restaurante: { select: { responsavelId: true } } },
+        });
+        if (!pedido) return;
+        const participantes = [
+          pedido.clienteId,
+          pedido.motoboy?.userId,
+          pedido.restaurante?.responsavelId,
+        ].filter(Boolean);
+        if (!participantes.includes(userId)) return;
+
+        const msg = { pedidoId, senderId, texto: texto.trim().slice(0, 1000), id: Date.now(), createdAt: new Date() };
+        io.to(`pedido_loja:${pedidoId}`).emit('loja:chat:receber', msg);
+      } catch {}
     });
 
     // ── Chat Corrida (Mototaxi) ↔ Passageiro ─────────────────────────────────
@@ -126,9 +142,22 @@ exports.initSocket = (io) => {
     });
 
     // Motoboy ou passageiro enviam mensagem na corrida
-    socket.on('corrida:chat:enviar', ({ corridaId, texto, senderId }) => {
-      const msg = { corridaId, senderId, texto, id: Date.now(), createdAt: new Date() };
-      io.to(`corrida:${corridaId}`).emit('corrida:chat:receber', msg);
+    socket.on('corrida:chat:enviar', async ({ corridaId, texto, senderId }) => {
+      if (!userId || userId !== senderId) return;
+      if (!texto || typeof texto !== 'string' || texto.trim().length === 0) return;
+
+      try {
+        const corrida = await prisma.corrida.findUnique({
+          where: { id: corridaId },
+          select: { passageiroId: true, motoboy: { select: { userId: true } } },
+        });
+        if (!corrida) return;
+        const participantes = [corrida.passageiroId, corrida.motoboy?.userId].filter(Boolean);
+        if (!participantes.includes(userId)) return;
+
+        const msg = { corridaId, senderId, texto: texto.trim().slice(0, 1000), id: Date.now(), createdAt: new Date() };
+        io.to(`corrida:${corridaId}`).emit('corrida:chat:receber', msg);
+      } catch {}
     });
 
     socket.on('disconnect', () => {
