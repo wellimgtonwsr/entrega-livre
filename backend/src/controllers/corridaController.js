@@ -481,14 +481,14 @@ exports.avaliarCorrida = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Não é possível avaliar a si mesmo' });
 
     const jaAvaliou = await prisma.avaliacao.findFirst({
-      where: { pedidoId: corrida.id, avaliadorId: req.user.id },
+      where: { corridaId: corrida.id, avaliadorId: req.user.id },
     });
     if (jaAvaliou)
       return res.status(409).json({ success: false, message: 'Você já avaliou esta corrida' });
 
     const avaliacao = await prisma.avaliacao.create({
       data: {
-        pedidoId: corrida.id,
+        corridaId: corrida.id,
         avaliadorId: req.user.id,
         avaliadoId,
         nota: parseInt(nota),

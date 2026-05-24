@@ -42,7 +42,7 @@ export default function AcompanharViagem() {
     socket.emit('entrar_corrida', corridaId)
     const locHandler = ({ lat, lng }) => setMotoboyPos({ lat, lng })
     const statusHandler = ({ status }) => {
-      if (status === 'CONCLUIDA') navigate('/splash')
+      if (status === 'CONCLUIDA') navigate(`/passageiro/avaliar-corrida/${corridaId}`)
       if (status === 'CANCELADA') navigate('/passageiro/nova-viagem')
     }
     socket.on('motoboy_location', locHandler)

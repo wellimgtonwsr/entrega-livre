@@ -64,8 +64,8 @@ export default function LojaDashboard() {
         return existe ? prev : [pedido, ...prev]
       })
     }
-    socket.on('pedido_restaurante:novo', handler)
-    return () => socket.off('pedido_restaurante:novo', handler)
+    socket.on('restaurante:novo_pedido', handler)
+    return () => socket.off('restaurante:novo_pedido', handler)
   }, [socket, restaurante?.id])
 
   const avancarStatus = async (pedidoId, novoStatus) => {

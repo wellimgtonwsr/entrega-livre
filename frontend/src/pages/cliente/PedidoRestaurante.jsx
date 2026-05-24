@@ -29,10 +29,9 @@ export default function PedidoRestaurante() {
   useEffect(() => {
     if (!socket) return
     socket.emit('entrar_pedido_rest', pedidoId)
-    socket.on('restaurante:status', ({ status }) => {
-      setPedido(prev => prev ? { ...prev, status } : prev)
-    })
-    return () => socket.off('restaurante:status')
+    const statusHandler = ({ status }) => setPedido(prev => prev ? { ...prev, status } : prev)
+    socket.on('restaurante:status', statusHandler)
+    return () => socket.off('restaurante:status', statusHandler)
   }, [socket, pedidoId])
 
   if (loading) return (

@@ -166,8 +166,10 @@ model Mensagem {
 
 model Avaliacao {
   id          String   @id @default(uuid())
-  pedidoId    String
-  pedido      Pedido   @relation(fields: [pedidoId], references: [id])
+  pedidoId    String?
+  pedido      Pedido?  @relation(fields: [pedidoId], references: [id])
+  corridaId   String?
+  corrida     Corrida? @relation(fields: [corridaId], references: [id])
   avaliadorId String
   avaliador   User     @relation("AvaliacoesFeitas", fields: [avaliadorId], references: [id])
   avaliadoId  String
@@ -202,6 +204,7 @@ model Corrida {
   createdAt        DateTime      @default(now())
 
   propostas PropostaCorrida[]
+  avaliacoes Avaliacao[]
 }
 
 enum CorridaStatus {

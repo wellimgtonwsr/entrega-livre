@@ -111,21 +111,23 @@ exports.initSocket = (io) => {
       socket.join(`pedido_loja:${pedidoId}`);
     });
 
-    // Motoboy ou loja enviam mensagem
+    // Cliente ou loja enviam mensagem sobre pedido de restaurante
     socket.on('loja:chat:enviar', async ({ pedidoId, texto, senderId }) => {
       if (!userId || userId !== senderId) return;
       if (!texto || typeof texto !== 'string' || texto.trim().length === 0) return;
 
       try {
-        const pedido = await prisma.pedido.findUnique({
+        const pedidoRest = await prisma.pedidoRestaurante.findUnique({
           where: { id: pedidoId },
-          select: { clienteId: true, motoboy: { select: { userId: true } }, restaurante: { select: { responsavelId: true } } },
+          select: {
+            clienteId: true,
+            restaurante: { select: { lojaProfile: { select: { userId: true } } } },
+          },
         });
-        if (!pedido) return;
+        if (!pedidoRest) return;
         const participantes = [
-          pedido.clienteId,
-          pedido.motoboy?.userId,
-          pedido.restaurante?.responsavelId,
+          pedidoRest.clienteId,
+          pedidoRest.restaurante?.lojaProfile?.userId,
         ].filter(Boolean);
         if (!participantes.includes(userId)) return;
 

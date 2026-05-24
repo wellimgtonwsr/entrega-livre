@@ -65,7 +65,7 @@ export default function CorridaEmAndamento() {
     try {
       await api.patch(`/corridas/${corridaId}/status`, { status: novoStatus })
       setStatus(novoStatus)
-      if (novoStatus === 'CONCLUIDA') navigate('/motoboy/dashboard')
+      if (novoStatus === 'CONCLUIDA') navigate(`/motoboy/avaliar-corrida/${corridaId}`)
     } catch (err) {
       alert(err.response?.data?.message || 'Erro ao atualizar status')
     } finally {

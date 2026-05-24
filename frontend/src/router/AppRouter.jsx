@@ -18,6 +18,7 @@ const HistoricoCliente = lazy(() => import('../pages/cliente/Historico'))
 const NovaViagem = lazy(() => import('../pages/passageiro/NovaViagem'))
 const AguardandoMototaxi = lazy(() => import('../pages/passageiro/AguardandoMototaxi'))
 const AcompanharViagem = lazy(() => import('../pages/passageiro/AcompanharViagem'))
+const AvaliarCorrida = lazy(() => import('../pages/passageiro/AvaliarCorrida'))
 
 // Motoboy
 const Dashboard = lazy(() => import('../pages/motoboy/Dashboard'))
@@ -26,6 +27,7 @@ const CorridaDetalhe = lazy(() => import('../pages/motoboy/CorridaDetalhe'))
 const CorridaEmAndamento = lazy(() => import('../pages/motoboy/CorridaEmAndamento'))
 const EmAndamento = lazy(() => import('../pages/motoboy/EmAndamento'))
 const AvaliarMotoboy = lazy(() => import('../pages/motoboy/Avaliar'))
+const AvaliarCorridaMotoboy = lazy(() => import('../pages/motoboy/AvaliarCorrida'))
 const Assinatura = lazy(() => import('../pages/motoboy/Assinatura'))
 const HistoricoMotoboy = lazy(() => import('../pages/motoboy/Historico'))
 
@@ -97,6 +99,7 @@ export default function AppRouter() {
           <Route path="/passageiro/nova-viagem" element={<PrivateRoute roles={['CLIENT']}><NovaViagem /></PrivateRoute>} />
           <Route path="/passageiro/aguardando/:corridaId" element={<PrivateRoute roles={['CLIENT']}><AguardandoMototaxi /></PrivateRoute>} />
           <Route path="/passageiro/acompanhar/:corridaId" element={<PrivateRoute roles={['CLIENT']}><AcompanharViagem /></PrivateRoute>} />
+          <Route path="/passageiro/avaliar-corrida/:corridaId" element={<PrivateRoute roles={['CLIENT']}><AvaliarCorrida /></PrivateRoute>} />
 
           {/* Motoboy */}
           <Route path="/motoboy/dashboard" element={<PrivateRoute roles={['MOTOBOY']}><Dashboard /></PrivateRoute>} />
@@ -105,6 +108,7 @@ export default function AppRouter() {
           <Route path="/motoboy/corrida-em-andamento/:corridaId" element={<PrivateRoute roles={['MOTOBOY']}><CorridaEmAndamento /></PrivateRoute>} />
           <Route path="/motoboy/em-andamento/:pedidoId" element={<PrivateRoute roles={['MOTOBOY']}><EmAndamento /></PrivateRoute>} />
           <Route path="/motoboy/avaliar/:pedidoId" element={<PrivateRoute roles={['MOTOBOY']}><AvaliarMotoboy /></PrivateRoute>} />
+          <Route path="/motoboy/avaliar-corrida/:corridaId" element={<PrivateRoute roles={['MOTOBOY']}><AvaliarCorridaMotoboy /></PrivateRoute>} />
           <Route path="/motoboy/assinatura" element={<PrivateRoute roles={['MOTOBOY']}><Assinatura /></PrivateRoute>} />
           <Route path="/motoboy/historico" element={<PrivateRoute roles={['MOTOBOY']}><HistoricoMotoboy /></PrivateRoute>} />
 
